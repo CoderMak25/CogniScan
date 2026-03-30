@@ -5,6 +5,7 @@ import TaskWordMemory from './TaskWordMemory.jsx'
 import TaskReactionTime from './TaskReactionTime.jsx'
 import TaskPatternMemory from './TaskPatternMemory.jsx'
 import SpeechAnalyzer from '../SpeechAnalyzer.jsx'
+import FacialAnalyzer from '../FacialAnalyzer.jsx'
 
 const WORDS = ['APPLE', 'RIVER', 'CLOCK', 'BRIDGE', 'FOREST']
 
@@ -160,7 +161,7 @@ export default function CognitiveTaskScreen() {
         <div className="absolute left-10 right-10 top-5 h-[2px] bg-baseline -z-10">
           <div 
             className="h-full bg-primary transition-all duration-500" 
-            style={{ width: `${((step - 1) / 3) * 100}%` }}
+            style={{ width: `${((step - 1) / 4) * 100}%` }}
           />
         </div>
         
@@ -168,7 +169,8 @@ export default function CognitiveTaskScreen() {
           { id: 1, label: 'Memory' },
           { id: 2, label: 'Motor' },
           { id: 3, label: 'Pattern' },
-          { id: 4, label: 'Speech' }
+          { id: 4, label: 'Speech' },
+          { id: 5, label: 'Facial' }
         ].map((s) => (
           <div key={s.id} className="flex flex-col items-center gap-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${
@@ -227,6 +229,20 @@ export default function CognitiveTaskScreen() {
         {step === 4 && (
           <div className="bg-card rounded-[32px] shadow-card p-10 border border-[#F1F3F4]">
             <SpeechAnalyzer />
+            <div className="mt-10 flex justify-center border-t border-[#F1F3F4] pt-8">
+              <button
+                onClick={() => setStep(5)}
+                className="px-10 py-5 bg-primary text-white rounded-[20px] font-bold text-lg hover:bg-[#155DB1] transition-all shadow-lg shadow-primary/25"
+              >
+                Next: Facial Analysis →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 5 && (
+          <div className="bg-card rounded-[32px] shadow-card p-10 border border-[#F1F3F4]">
+            <FacialAnalyzer />
             <div className="mt-10 flex justify-center border-t border-[#F1F3F4] pt-8">
               <button
                 onClick={() => navigate('/results')}

@@ -4,6 +4,7 @@ import LandingHero from './components/LandingHero.jsx'
 import CognitiveTaskScreen from './components/tasks/CognitiveTaskScreen.jsx'
 import DashboardScreen from './components/DashboardScreen.jsx'
 import SpeechAnalyzer from './components/SpeechAnalyzer.jsx'
+import FacialAnalyzer from './components/FacialAnalyzer.jsx'
 import InsightsScreen from './components/InsightsScreen.jsx'
 import ResultsScreen from './components/ResultsScreen.jsx'
 import CaregiverDrawer from './components/CaregiverDrawer.jsx'
@@ -19,6 +20,7 @@ function App() {
           <Route path="/results" element={<ResultsScreen />} />
           <Route path="/dashboard" element={<DashboardScreen />} />
           <Route path="/speech" element={<SpeechAnalyzer />} />
+          <Route path="/facial" element={<FacialAnalyzer />} />
           <Route path="/insights" element={<InsightsScreen />} />
         </Routes>
       </main>

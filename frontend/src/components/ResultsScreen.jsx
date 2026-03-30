@@ -20,12 +20,16 @@ export default function ResultsScreen() {
     }
   }
 
-  // Calculate final weighted score consistent with CognitiveContext
+  // Calculate final weighted score — 5-way at 20% each
+  const avgReaction = checkInData.reactionTimes.length
+    ? checkInData.reactionTimes.reduce((a,b)=>a+b,0)/checkInData.reactionTimes.length
+    : 0
   const total = Math.round(
-    checkInData.memoryScore * 0.25 +
-    (checkInData.reactionTimes.length ? Math.max(0, 100 - (checkInData.reactionTimes.reduce((a,b)=>a+b,0)/checkInData.reactionTimes.length)/10) * 0.25 : 0) +
-    checkInData.patternScore * 0.25 +
-    checkInData.speechScore * 0.25
+    checkInData.memoryScore * 0.20 +
+    (Math.max(0, 100 - (avgReaction)/10)) * 0.20 +
+    checkInData.patternScore * 0.20 +
+    checkInData.speechScore * 0.20 +
+    checkInData.facialScore * 0.20
   )
 
   const tasks = [
@@ -33,6 +37,7 @@ export default function ResultsScreen() {
     { name: 'Motor Reaction', score: Math.round(checkInData.reactionTimes.length ? 100 - (checkInData.reactionTimes.reduce((a,b)=>a+b,0)/checkInData.reactionTimes.length)/10 : 0), status: 'Stable', color: 'text-primary' },
     { name: 'Pattern Logic', score: checkInData.patternScore, status: checkInData.patternScore > 60 ? 'Optimal' : 'Low', color: 'text-success' },
     { name: 'Speech Fluency', score: checkInData.speechScore, status: checkInData.speechScore > 80 ? 'Excellent' : 'Normal', color: 'text-primary' },
+    { name: 'Facial Expression', score: checkInData.facialScore, status: checkInData.facialScore > 80 ? 'Excellent' : checkInData.facialScore > 60 ? 'Normal' : 'Flagged', color: 'text-[#8B5CF6]' },
   ]
 
   return (

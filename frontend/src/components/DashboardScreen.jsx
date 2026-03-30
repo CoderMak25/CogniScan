@@ -46,7 +46,7 @@ export default function DashboardScreen() {
     const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0
 
     // Latest Radar Data
-    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80 }
+    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80, facial: 80 }
 
     return {
       avgScore,
@@ -67,11 +67,11 @@ export default function DashboardScreen() {
         ]
       },
       radarData: {
-        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Logic'],
+        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Logic', 'Facial'],
         datasets: [
           {
             label: 'Current Mapping',
-            data: [last.memory, last.reaction, last.sequence, last.speech || 0, (last.memory+last.sequence)/2],
+            data: [last.memory, last.reaction, last.sequence, last.speech || 0, (last.memory+last.sequence)/2, last.facial || 0],
             backgroundColor: 'rgba(26, 115, 232, 0.2)',
             borderColor: '#1A73E8',
             borderWidth: 2,
@@ -117,6 +117,12 @@ export default function DashboardScreen() {
             <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Acoustic Biomarkers</p>
             <div className="text-4xl font-bold text-textPrimary">{latestScore?.rawMetrics?.pauseFrequency || '--'}</div>
             <p className="text-xs font-medium text-textSecondary mt-3">Pause frequency (per min)</p>
+          </div>
+
+          <div className="bg-card rounded-[24px] shadow-card p-6 border-b-4 border-[#8B5CF6]">
+            <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Facial Stability</p>
+            <div className="text-4xl font-bold text-[#8B5CF6]">{latestScore?.taskScores?.facial ?? '--'}</div>
+            <p className="text-xs font-medium text-textSecondary mt-3">Blink rate: {latestScore?.rawMetrics?.facialBlinkRate || 0}/s</p>
           </div>
         </div>
 

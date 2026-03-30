@@ -22,6 +22,11 @@ export function CognitiveProvider({ children }) {
     avgWordDuration: 0,
     pauseFrequency: 0,
     speechCompleted: false,
+    facialScore: 0,
+    facialBlinkRate: 0,
+    facialStabilityScore: 0,
+    facialEyeClosureTime: 0,
+    facialCompleted: false,
     totalScore: 0,
   })
 
@@ -40,6 +45,11 @@ export function CognitiveProvider({ children }) {
       avgWordDuration: 0,
       pauseFrequency: 0,
       speechCompleted: false,
+      facialScore: 0,
+      facialBlinkRate: 0,
+      facialStabilityScore: 0,
+      facialEyeClosureTime: 0,
+      facialCompleted: false,
       totalScore: 0,
     })
   }, [])
@@ -66,20 +76,25 @@ export function CognitiveProvider({ children }) {
       ? checkInData.reactionTimes.reduce((a, b) => a + b, 0) / checkInData.reactionTimes.length 
       : 0
 
+    const reactionScore = Math.max(0, 100 - (avgReactionMs / 10))
+
+    // 5-way equal weighting at 20% each
     const totalScore = Math.round(
-      checkInData.memoryScore * 0.25 +
-      (Math.max(0, 100 - (avgReactionMs / 10))) * 0.25 +
-      checkInData.patternScore * 0.25 +
-      checkInData.speechScore * 0.25
+      checkInData.memoryScore * 0.20 +
+      reactionScore * 0.20 +
+      checkInData.patternScore * 0.20 +
+      checkInData.speechScore * 0.20 +
+      checkInData.facialScore * 0.20
     )
 
     const payload = {
       userId: MOCK_USER_ID,
       taskScores: {
         memory: checkInData.memoryScore,
-        reaction: Math.round(Math.max(0, 100 - (avgReactionMs / 10))),
+        reaction: Math.round(reactionScore),
         sequence: checkInData.patternScore,
-        speech: checkInData.speechScore
+        speech: checkInData.speechScore,
+        facial: checkInData.facialScore
       },
       rawMetrics: {
         memoryRecallCount: Math.round(checkInData.memoryScore / 20),
@@ -87,7 +102,10 @@ export function CognitiveProvider({ children }) {
         sequenceRoundsCorrect: Math.round(checkInData.patternScore / 33),
         speechFluencyScore: checkInData.speechScore,
         avgWordDuration: checkInData.avgWordDuration,
-        pauseFrequency: checkInData.pauseFrequency
+        pauseFrequency: checkInData.pauseFrequency,
+        facialBlinkRate: checkInData.facialBlinkRate,
+        facialStabilityScore: checkInData.facialStabilityScore,
+        facialEyeClosureTime: checkInData.facialEyeClosureTime
       },
       totalScore
     }

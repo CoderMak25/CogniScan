@@ -5,6 +5,7 @@ const baselineSchema = new mongoose.Schema({
   reaction: { type: Number, default: 80, min: 0, max: 100 },
   sequence: { type: Number, default: 80, min: 0, max: 100 },
   speech: { type: Number, default: 80, min: 0, max: 100 },
+  facial: { type: Number, default: 80, min: 0, max: 100 },
   overall: { type: Number, default: 80, min: 0, max: 100 },
 }, { _id: false })
 

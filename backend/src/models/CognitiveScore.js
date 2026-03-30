@@ -5,6 +5,7 @@ const scoreSchema = new mongoose.Schema({
   reaction: { type: Number, required: true, min: 0, max: 100 },
   sequence: { type: Number, required: true, min: 0, max: 100 },
   speech: { type: Number, min: 0, max: 100, default: null },
+  facial: { type: Number, min: 0, max: 100, default: null },
 }, { _id: false })
 
 const rawSchema = new mongoose.Schema({
@@ -14,6 +15,9 @@ const rawSchema = new mongoose.Schema({
   speechFluencyScore: { type: Number, min: 0, max: 100 },
   avgWordDuration: { type: Number, default: 0 },
   pauseFrequency: { type: Number, default: 0 },
+  facialBlinkRate: { type: Number, default: 0 },
+  facialStabilityScore: { type: Number, default: 0 },
+  facialEyeClosureTime: { type: Number, default: 0 },
 }, { _id: false })
 
 const anomalySchema = new mongoose.Schema({

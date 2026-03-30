@@ -35,11 +35,23 @@ router.post('/', async (req, res) => {
     const reaction = clamp(Number(taskScores.reaction), 0, 100)
     const sequence = clamp(Number(taskScores.sequence), 0, 100)
     const speech = taskScores.speech == null ? null : clamp(Number(taskScores.speech), 0, 100)
+    const facial = taskScores.facial == null ? null : clamp(Number(taskScores.facial), 0, 100)
     
-    // Synchronized with frontend weightings (25% each)
-    const totalScore = speech == null
-      ? Math.round(memory * 0.35 + reaction * 0.35 + sequence * 0.3)
-      : Math.round(memory * 0.25 + reaction * 0.25 + sequence * 0.25 + speech * 0.25)
+    // Dynamic weighting based on which modalities are present
+    let totalScore
+    if (speech != null && facial != null) {
+      // All 5 present → 20% each
+      totalScore = Math.round(memory * 0.20 + reaction * 0.20 + sequence * 0.20 + speech * 0.20 + facial * 0.20)
+    } else if (speech != null) {
+      // 4 tasks → 25% each
+      totalScore = Math.round(memory * 0.25 + reaction * 0.25 + sequence * 0.25 + speech * 0.25)
+    } else if (facial != null) {
+      // 4 tasks → 25% each
+      totalScore = Math.round(memory * 0.25 + reaction * 0.25 + sequence * 0.25 + facial * 0.25)
+    } else {
+      // 3 tasks
+      totalScore = Math.round(memory * 0.35 + reaction * 0.35 + sequence * 0.3)
+    }
 
     const history = await CognitiveScore.find({ userId }).sort({ timestamp: -1 }).limit(30).select('totalScore').lean()
     const arr = history.map((h) => h.totalScore)
@@ -51,7 +63,7 @@ router.post('/', async (req, res) => {
     const score = await CognitiveScore.create({
       userId,
       timestamp: timestamp ? new Date(timestamp) : new Date(),
-      taskScores: { memory, reaction, sequence, speech },
+      taskScores: { memory, reaction, sequence, speech, facial },
       rawMetrics,
       totalScore,
       anomaly: { zScore, isAnomaly, threshold: -1.5 },
