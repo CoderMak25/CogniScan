@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Mono&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "Space Mono", monospace;
+  --color-bg: #F8F9FA;
+  --color-card: #FFFFFF;
+  --color-primary: #1A73E8;
+  --color-success: #34A853;
+  --color-warning: #FBBC04;
+  --color-alert: #EA4335;
+  --color-baseline: #9AA0A6;
+  --color-textPrimary: #202124;
+  --color-textSecondary: #5F6368;
+  --shadow-card: 0 2px 14px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  margin: 0;
+  background-color: #F8F9FA;
+  color: #202124;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fade-in {
+  animation: fadeIn 280ms ease-out forwards;
+}
+
+.slide-up {
+  animation: slideUp 280ms ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-hover {
+  @apply transition-all duration-200 active:scale-[0.98];
+}
