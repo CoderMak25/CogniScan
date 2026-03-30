@@ -17,12 +17,9 @@ export default function InsightsScreen() {
   const { latestScore, history } = useCognitive()
 
   const { donutData, importanceData, calibrationDate } = useMemo(() => {
-    // Default weights
-    const weights = [20, 20, 20, 20, 20]
-    
     // Calculate Feature Importance based on stability (Coefficient of Variation)
     // More stable features = higher importance for baseline
-    const tasks = ['memory', 'reaction', 'sequence', 'speech', 'typing']
+    const tasks = ['memory', 'reaction', 'sequence', 'speech', 'typing', 'facial']
     const importance = tasks.map(task => {
       const values = history.map(h => h.taskScores[task] || 0).filter(v => v > 0)
       if (values.length < 3) return Math.floor(Math.random() * 20) + 60 // Default simulation
@@ -38,16 +35,16 @@ export default function InsightsScreen() {
         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
       }) : 'Never',
       donutData: {
-        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Typing'],
+        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Typing', 'Facial'],
         datasets: [{
-          data: weights,
-          backgroundColor: ['#1A73E8', '#34A853', '#FBBC04', '#EA4335', '#A142F4'],
+          data: [17, 17, 17, 17, 16, 16],
+          backgroundColor: ['#1A73E8', '#34A853', '#FBBC04', '#EA4335', '#A142F4', '#8B5CF6'],
           borderWidth: 0,
           hoverOffset: 10,
         }]
       },
       importanceData: {
-        labels: ['Memory Recall', 'Motor Reaction', 'Pattern Sequence', 'Speech Fluency', 'Typing Fluency', 'Tone Stability'],
+        labels: ['Memory Recall', 'Motor Reaction', 'Pattern Sequence', 'Speech Fluency', 'Typing Fluency', 'Facial Stability', 'Tone Stability'],
         datasets: [{
           label: 'Weighting Index',
           data: [...importance, 75],

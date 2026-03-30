@@ -82,7 +82,7 @@ export default function CaregiverDrawer() {
         <div className="p-10 bg-white border-t border-[#F1F3F4]/50">
           <button 
             onClick={() => setIsDrawerOpen(false)}
-            className="w-full bg-primary text-white py-5 rounded-[24px] font-black text-sm uppercase tracking-[0.15em] hover:bg-[#155DB1] hover:scale-[1.02] transition-all shadow-xl shadow-primary/30 active:scale-95"
+            className="w-full bg-primary text-white py-5 rounded-[24px] font-black text-sm uppercase tracking-[0.15em] hover:bg-[#155DB1] btn-hover shadow-xl shadow-primary/30"
           >
             Update Configuration
           </button>

@@ -34,6 +34,7 @@ router.post('/', async (req, res) => {
     const speech = taskScores.speech == null ? null : clamp(Number(taskScores.speech), 0, 100)
     const stroop = taskScores.stroop == null ? null : clamp(Number(taskScores.stroop), 0, 100)
     const typing = taskScores.typing == null ? null : clamp(Number(taskScores.typing), 0, 100)
+    const facial = taskScores.facial == null ? null : clamp(Number(taskScores.facial), 0, 100)
     
     // Dynamic weightings based on available tasks
     const tasks = [
@@ -42,7 +43,8 @@ router.post('/', async (req, res) => {
       { val: sequence, w: sequence != null ? 1 : 0 },
       { val: speech, w: speech != null ? 1 : 0 },
       { val: stroop, w: stroop != null ? 1 : 0 },
-      { val: typing, w: typing != null ? 1 : 0 }
+      { val: typing, w: typing != null ? 1 : 0 },
+      { val: facial, w: facial != null ? 1 : 0 }
     ]
     
     const activeTasks = tasks.filter(t => t.w > 0)
@@ -59,7 +61,7 @@ router.post('/', async (req, res) => {
     const score = await CognitiveScore.create({
       userId,
       timestamp: timestamp ? new Date(timestamp) : new Date(),
-      taskScores: { memory, reaction, sequence, speech, stroop, typing },
+      taskScores: { memory, reaction, sequence, speech, stroop, typing, facial },
       rawMetrics,
       totalScore,
       anomaly: { zScore, isAnomaly, threshold: -1.5 },

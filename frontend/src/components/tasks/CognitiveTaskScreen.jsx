@@ -220,7 +220,7 @@ export default function CognitiveTaskScreen() {
         <>
           {/* Stepper */}
           <div className="flex items-center justify-between mb-12 relative px-10 max-w-[800px] mx-auto">
-            <div className="absolute left-20 right-20 top-5 h-[2px] bg-baseline -z-10">
+            <div className="absolute left-10 right-10 top-5 h-[2px] bg-baseline -z-10">
               <div 
                 className="h-full bg-primary transition-all duration-500" 
                 style={{ width: `${((step - 1) / 4) * 100}%` }}
@@ -234,7 +234,7 @@ export default function CognitiveTaskScreen() {
               { id: 4, label: 'Speech' },
               { id: 5, label: 'Typing' }
             ].map((s) => (
-              <div key={s.id} className="flex flex-col items-center gap-3">
+              <div key={s.id} className="flex flex-col items-center gap-3 bg-bg">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${
                   step >= s.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white border-baseline text-baseline'
                 }`}>

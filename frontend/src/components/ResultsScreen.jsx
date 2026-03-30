@@ -31,6 +31,7 @@ export default function ResultsScreen() {
     { val: checkInData.patternScore, count: 1 },
     { val: checkInData.speechScore, count: checkInData.speechScore > 0 ? 1 : 0 },
     { val: checkInData.typingScore, count: checkInData.typingScore > 0 ? 1 : 0 },
+    { val: checkInData.facialScore, count: checkInData.facialScore > 0 ? 1 : 0 }
   ].filter(t => t.count > 0)
 
   const total = Math.round(activeTasks.reduce((s, t) => s + t.val, 0) / activeTasks.length)
@@ -42,6 +43,10 @@ export default function ResultsScreen() {
     { name: 'Speech', score: checkInData.speechScore, status: checkInData.speechScore > 80 ? 'EXCELLENT' : 'NORMAL', color: 'text-primary' },
     { name: 'Typing', score: checkInData.typingScore, status: checkInData.typingScore > 80 ? 'FAST' : 'BUILDING', color: 'text-primary' },
   ]
+  
+  if (checkInData.facialScore > 0) {
+    tasks.push({ name: 'Facial', score: checkInData.facialScore, status: checkInData.facialScore > 80 ? 'EXCELLENT' : checkInData.facialScore > 60 ? 'NORMAL' : 'MONITOR', color: 'text-[#8B5CF6]' })
+  }
 
   return (
     <div className="max-w-[800px] mx-auto fade-in">
@@ -86,7 +91,7 @@ export default function ResultsScreen() {
           <button
             onClick={handleFinish}
             disabled={isSaving}
-            className="w-full bg-primary text-white py-6 rounded-[32px] font-black text-xl uppercase tracking-widest hover:bg-[#155DB1] hover:scale-[1.02] transition-all shadow-2xl shadow-primary/30 disabled:opacity-50 active:scale-95"
+            className="w-full bg-primary text-white py-6 rounded-[32px] font-black text-xl uppercase tracking-widest hover:bg-[#155DB1] btn-hover shadow-2xl shadow-primary/30 disabled:opacity-50"
           >
             {isSaving ? 'Synchronizing Pipeline...' : 'Commit to Dashboard'}
           </button>

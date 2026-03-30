@@ -16,13 +16,13 @@ export default function LandingHero() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             to="/tasks"
-            className="w-full sm:w-auto bg-primary text-white rounded-[16px] px-10 py-5 font-semibold hover:bg-[#155DB1] transition-all shadow-lg shadow-primary/25 active:scale-95"
+            className="w-full sm:w-auto bg-primary text-white rounded-[16px] px-10 py-5 font-semibold hover:bg-[#155DB1] btn-hover shadow-lg shadow-primary/25"
           >
             Begin Today&apos;s Baseline Check
           </Link>
           <Link
             to="/dashboard"
-            className="w-full sm:w-auto bg-white text-textPrimary border border-[#F1F3F4] rounded-[16px] px-10 py-5 font-semibold hover:border-primary transition-all active:scale-95 shadow-sm"
+            className="w-full sm:w-auto bg-white text-textPrimary border border-[#F1F3F4] rounded-[16px] px-10 py-5 font-semibold hover:border-primary btn-hover shadow-sm"
           >
             Review Sample Metrics
           </Link>

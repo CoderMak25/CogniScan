@@ -84,7 +84,7 @@ export default function TaskStroop({ onComplete }) {
           <button
             key={c}
             onClick={() => handleAnswer(c)}
-            className="bg-white border border-[#F1F3F4] py-6 rounded-[20px] font-bold text-textPrimary hover:border-primary hover:text-primary transition-all shadow-sm active:scale-95"
+            className="bg-white border border-[#F1F3F4] py-6 rounded-[20px] font-bold text-textPrimary hover:border-primary hover:text-primary btn-hover shadow-sm"
           >
             {c}
           </button>
