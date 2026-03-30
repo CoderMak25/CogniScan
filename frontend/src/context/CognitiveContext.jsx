@@ -16,6 +16,7 @@ export function CognitiveProvider({ children }) {
     patternScore: 0,
     speechScore: 0,
     stroopScore: 0,
+    typingScore: 0,
     wpm: 0,
     pauses: 0,
     avgWordDuration: 0,
@@ -37,6 +38,7 @@ export function CognitiveProvider({ children }) {
       patternScore: 0,
       speechScore: 0,
       stroopScore: 0,
+      typingScore: 0,
       wpm: 0,
       pauses: 0,
       avgWordDuration: 0,
@@ -73,7 +75,8 @@ export function CognitiveProvider({ children }) {
       { val: Math.max(0, 100 - (avgReactionMs / 10)), count: 1 },
       { val: checkInData.patternScore, count: 1 },
       { val: checkInData.speechScore, count: checkInData.speechScore > 0 ? 1 : 0 },
-      { val: checkInData.stroopScore, count: checkInData.stroopScore > 0 ? 1 : 0 }
+      { val: checkInData.stroopScore, count: checkInData.stroopScore > 0 ? 1 : 0 },
+      { val: checkInData.typingScore, count: checkInData.typingScore > 0 ? 1 : 0 }
     ]
     const active = tasks.filter(t => t.count > 0)
     const totalScore = Math.round(active.reduce((s, t) => s + t.val, 0) / active.length)
@@ -85,7 +88,8 @@ export function CognitiveProvider({ children }) {
         reaction: Math.round(Math.max(0, 100 - (avgReactionMs / 10))),
         sequence: checkInData.patternScore,
         speech: checkInData.speechScore,
-        stroop: checkInData.stroopScore
+        stroop: checkInData.stroopScore,
+        typing: checkInData.typingScore
       },
       rawMetrics: {
         memoryRecallCount: Math.round(checkInData.memoryScore / 20),
@@ -95,7 +99,10 @@ export function CognitiveProvider({ children }) {
         avgWordDuration: checkInData.avgWordDuration,
         pauseFrequency: checkInData.pauseFrequency,
         stroopAccuracy: checkInData.stroopAccuracy,
-        stroopAvgMs: checkInData.stroopAvgMs
+        stroopAvgMs: checkInData.stroopAvgMs,
+        typingWpm: checkInData.typingWpm || 0,
+        typingAccuracy: checkInData.typingAccuracy || 0,
+        typingErrors: checkInData.typingErrors || 0
       },
       totalScore
     }
@@ -118,7 +125,19 @@ export function CognitiveProvider({ children }) {
   }, [checkInData, fetchHistory])
 
   const saveSpecializedCheckIn = useCallback(async (taskType, score, metrics) => {
-    const updates = { [`${taskType}Score`]: score, ...metrics }
+    const taskTypeMap = {
+      stroop: 'stroop',
+      'number-span': 'numberSpan',
+      typing: 'typing',
+    }
+    const domain = taskTypeMap[taskType] || taskType
+    const updates = {
+      [`${domain}Score`]: score,
+      typingWpm: metrics?.wpm || checkInData.typingWpm || 0,
+      typingAccuracy: metrics?.accuracy || checkInData.typingAccuracy || 0,
+      typingErrors: metrics?.errors || checkInData.typingErrors || 0,
+      ...metrics,
+    }
     updateCheckIn(updates)
 
     const currentTaskScores = Object.keys(checkInData)
@@ -131,7 +150,7 @@ export function CognitiveProvider({ children }) {
 
     const payload = {
       userId: MOCK_USER_ID,
-      taskScores: { ...currentTaskScores, [taskType]: score },
+      taskScores: { ...currentTaskScores, [domain]: score },
       rawMetrics: { ...checkInData, ...metrics },
       timestamp: new Date()
     }

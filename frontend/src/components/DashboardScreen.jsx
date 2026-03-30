@@ -31,7 +31,7 @@ export default function DashboardScreen() {
     fetchHistory().catch(() => {})
   }, [fetchHistory])
 
-  const { chartData, radarData, progress, avgScore, insight, peakDomain, alertStatus } = useMemo(() => {
+  const { chartData, radarData, avgScore, insight, peakDomain } = useMemo(() => {
     const labels = history.map(h => new Date(h.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
     const scores = history.map(h => h.totalScore)
     
@@ -46,7 +46,7 @@ export default function DashboardScreen() {
     const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0
 
     // Latest Radar Data
-    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80 }
+    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80, typing: 80 }
     
     // Average Radar Data (Baseline)
     const baselineRadar = history.length > 0 ? {
@@ -54,6 +54,7 @@ export default function DashboardScreen() {
       reaction: Math.round(history.reduce((a,h)=>a+h.taskScores.reaction,0)/history.length),
       sequence: Math.round(history.reduce((a,h)=>a+h.taskScores.sequence,0)/history.length),
       speech: Math.round(history.reduce((a,h)=>a+(h.taskScores.speech||0),0)/history.length),
+      typing: Math.round(history.reduce((a,h)=>a+(h.taskScores.typing||0),0)/history.length),
     } : last
 
     // Dynamic Insight Logic
@@ -69,7 +70,8 @@ export default function DashboardScreen() {
         { name: 'Memory', val: last.memory },
         { name: 'Motor', val: last.reaction },
         { name: 'Sequence', val: last.sequence },
-        { name: 'Speech', val: last.speech || 0 }
+        { name: 'Speech', val: last.speech || 0 },
+        { name: 'Typing', val: last.typing || 0 },
       ]
       peakDomain = domainScores.sort((a,b) => b.val - a.val)[0].name
       
@@ -87,10 +89,8 @@ export default function DashboardScreen() {
 
     return {
       avgScore,
-      progress,
       insight,
       peakDomain,
-      alertStatus,
       chartData: {
         labels: labels.slice(-7),
         datasets: [
@@ -107,18 +107,18 @@ export default function DashboardScreen() {
         ]
       },
       radarData: {
-        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Focus'],
+        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Typing'],
         datasets: [
           {
             label: 'Current Mapping',
-            data: [last.memory, last.reaction, last.sequence, last.speech || 0, Math.round((last.memory + last.sequence)/2)],
+            data: [last.memory, last.reaction, last.sequence, last.speech || 0, last.typing || 0],
             backgroundColor: 'rgba(26, 115, 232, 0.2)',
             borderColor: '#1A73E8',
             borderWidth: 2,
           },
           {
             label: 'Baseline Average',
-            data: [baselineRadar.memory, baselineRadar.reaction, baselineRadar.sequence, baselineRadar.speech, Math.round((baselineRadar.memory + baselineRadar.sequence)/2)],
+            data: [baselineRadar.memory, baselineRadar.reaction, baselineRadar.sequence, baselineRadar.speech, baselineRadar.typing || 0],
             backgroundColor: 'rgba(52, 168, 83, 0.1)',
             borderColor: '#34A853',
             borderWidth: 1,
@@ -194,6 +194,16 @@ export default function DashboardScreen() {
                 </div>
               </div>
               <div className="w-16 h-16 bg-[#F8F9FA] rounded-[24px] flex items-center justify-center shadow-sm text-2xl">🔢</div>
+            </div>
+
+            <div className="bg-white rounded-[40px] shadow-sm border border-[#D1E3FF] p-6 flex items-center justify-between group hover:shadow-md transition-all">
+              <div>
+                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Typing</p>
+                <div className="text-3xl font-black text-textPrimary tracking-tight">
+                  {latestScore?.taskScores?.typing || 0} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">speed + accuracy</span>
+                </div>
+              </div>
+              <div className="w-16 h-16 bg-[#F8F9FA] rounded-[24px] flex items-center justify-center shadow-sm text-2xl">⌨️</div>
             </div>
 
             {/* Acoustic Drifts Box */}

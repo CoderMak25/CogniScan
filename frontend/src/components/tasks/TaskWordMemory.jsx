@@ -13,7 +13,7 @@ export default function TaskWordMemory({
   return (
     <div className="fade-in">
       <div className="bg-[#E8F0FD] text-primary text-xs font-medium rounded-full px-3 py-1 inline-block mb-4">
-        Task 1 of 3 · Memory Recall
+        Task 1 of 5 · Memory Recall
       </div>
       <h2 className="text-2xl font-semibold tracking-tight text-textPrimary">Memorize These Words</h2>
       <p className="text-sm text-textSecondary mt-1 mb-8">You have 5 seconds. They will disappear.</p>

@@ -18,7 +18,7 @@ export default function TaskPatternMemory({
   return (
     <div className={`text-center fade-in ${wrongMove ? 'animate-shake' : ''}`}>
       <div className="bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-full px-4 py-1.5 inline-block mb-6">
-        Task 3 of 4 · Pattern Memory
+        Task 3 of 5 · Pattern Memory
       </div>
       <h2 className="text-3xl font-bold tracking-tight text-textPrimary mb-2">Repeat the Sequence</h2>
       <p className="text-textSecondary mb-10 max-w-[400px] mx-auto">Watch the pattern closely, then tap the symbols in the same order.</p>

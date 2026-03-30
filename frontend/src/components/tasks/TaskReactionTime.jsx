@@ -10,7 +10,7 @@ export default function TaskReactionTime({
   return (
     <div className="text-center fade-in">
       <div className="bg-[#E8F0FD] text-primary text-xs font-medium rounded-full px-3 py-1 inline-block mb-4">
-        Task 2 of 3 · Reaction Time
+        Task 2 of 5 · Reaction Time
       </div>
       <h2 className="text-2xl font-semibold tracking-tight text-textPrimary">Tap When It Turns Blue</h2>
       <p className="text-sm text-textSecondary mt-1 mb-2">
