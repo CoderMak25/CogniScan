@@ -10,8 +10,8 @@ const WORDS = ['APPLE', 'RIVER', 'CLOCK', 'BRIDGE', 'FOREST']
 
 export default function CognitiveTaskScreen() {
   const navigate = useNavigate()
-  const { updateCheckIn } = useCognitive()
-  const [step, setStep] = useState(1)
+  const { updateCheckIn, unlockedTasks } = useCognitive()
+  const [step, setStep] = useState(0) // Start at Selection Hub
 
   // Task 1: Word Memory State
   const [memoryStarted, setMemoryStarted] = useState(false)
@@ -154,34 +154,94 @@ export default function CognitiveTaskScreen() {
   }
 
   return (
-    <section className="max-w-[800px] mx-auto py-8">
-      {/* Stepper */}
-      <div className="flex items-center justify-between mb-12 relative px-10">
-        <div className="absolute left-10 right-10 top-5 h-[2px] bg-baseline -z-10">
-          <div 
-            className="h-full bg-primary transition-all duration-500" 
-            style={{ width: `${((step - 1) / 3) * 100}%` }}
-          />
-        </div>
-        
-        {[
-          { id: 1, label: 'Memory' },
-          { id: 2, label: 'Motor' },
-          { id: 3, label: 'Pattern' },
-          { id: 4, label: 'Speech' }
-        ].map((s) => (
-          <div key={s.id} className="flex flex-col items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${
-              step >= s.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white border-baseline text-baseline'
-            }`}>
-              {step > s.id ? '✓' : s.id}
-            </div>
-            <span className={`text-[10px] font-bold uppercase tracking-widest ${step >= s.id ? 'text-primary' : 'text-textSecondary'}`}>
-              {s.label}
-            </span>
+    <section className="max-w-[1000px] mx-auto py-8">
+      {step === 0 ? (
+        <div className="fade-in">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-black text-textPrimary mb-4 uppercase tracking-tighter">Diagnostic Selection</h1>
+            <p className="text-textSecondary max-w-[500px] mx-auto">Choose a cognitive assessment category to begin your calibration.</p>
           </div>
-        ))}
-      </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <button 
+              onClick={() => setStep(1)}
+              className="group bg-card p-10 rounded-[40px] border border-[#F1F3F4] hover:border-primary hover:shadow-2xl transition-all text-left"
+            >
+              <div className="bg-primary/10 w-16 h-16 rounded-[20px] flex items-center justify-center mb-8 border border-primary/20 group-hover:scale-110 transition-transform">
+                <span className="text-3xl">📋</span>
+              </div>
+              <h2 className="text-2xl font-bold text-textPrimary mb-3 group-hover:text-primary transition-colors">Daily Baseline</h2>
+              <p className="text-sm text-textSecondary leading-relaxed mb-8">A comprehensive 4-step assessment of memory, motor speed, pattern recognition, and speech acoustics.</p>
+              <div className="flex items-center text-primary font-bold gap-2 text-sm">
+                Start Session <span>→</span>
+              </div>
+            </button>
+
+            <div className="bg-card p-10 rounded-[40px] border border-[#F1F3F4] flex flex-col">
+              <div className="bg-[#FBBC05]/10 w-16 h-16 rounded-[20px] flex items-center justify-center mb-8 border border-[#FBBC05]/20">
+                <span className="text-3xl">🔬</span>
+              </div>
+              <h2 className="text-2xl font-bold text-textPrimary mb-3">Diagnostic Suite</h2>
+              <p className="text-sm text-textSecondary leading-relaxed mb-10">Targeted clinical tests for specific cognitive domains like Executive Function and Spatial Planning.</p>
+              
+              <div className="space-y-3 mt-auto">
+                <button 
+                  onClick={() => navigate('/tasks/stroop')}
+                  className="w-full bg-bg py-4 px-6 rounded-[20px] border border-[#F1F3F4] flex items-center justify-between hover:border-primary transition-all group/item"
+                >
+                  <span className="font-bold text-textPrimary group-hover/item:text-primary transition-colors">Stroop Test</span>
+                  <span className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full font-bold uppercase">Ready</span>
+                </button>
+                
+                {unlockedTasks.includes('number-span') ? (
+                  <button 
+                    onClick={() => navigate('/tasks/number-span')}
+                    className="w-full bg-bg py-4 px-6 rounded-[20px] border border-[#F1F3F4] flex items-center justify-between hover:border-primary transition-all group/item fade-in"
+                  >
+                    <span className="font-bold text-textPrimary group-hover/item:text-primary transition-colors">Number Span</span>
+                    <span className="text-[10px] bg-success/10 text-success px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Unlocked</span>
+                  </button>
+                ) : (
+                  <div className="w-full bg-bg py-4 px-6 rounded-[20px] border border-[#F1F3F4] flex items-center justify-between opacity-40 grayscale-[0.5]">
+                    <span className="font-bold text-textPrimary">Number Span</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] bg-baseline text-white px-2 py-0.5 rounded-full font-bold uppercase">Locked</span>
+                      <span className="text-[9px] font-bold text-textSecondary italic">Complete Stroop</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Stepper */}
+          <div className="flex items-center justify-between mb-12 relative px-10 max-w-[800px] mx-auto">
+            <div className="absolute left-20 right-20 top-5 h-[2px] bg-baseline -z-10">
+              <div 
+                className="h-full bg-primary transition-all duration-500" 
+                style={{ width: `${((step - 1) / 3) * 100}%` }}
+              />
+            </div>
+            
+            {[
+              { id: 1, label: 'Memory' },
+              { id: 2, label: 'Motor' },
+              { id: 3, label: 'Pattern' },
+              { id: 4, label: 'Speech' }
+            ].map((s) => (
+              <div key={s.id} className="flex flex-col items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${
+                  step >= s.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white border-baseline text-baseline'
+                }`}>
+                  {step > s.id ? '✓' : s.id}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="slide-up">
         {step === 1 && (

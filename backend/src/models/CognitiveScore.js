@@ -1,10 +1,11 @@
 import mongoose from 'mongoose'
 
 const scoreSchema = new mongoose.Schema({
-  memory: { type: Number, required: true, min: 0, max: 100 },
-  reaction: { type: Number, required: true, min: 0, max: 100 },
-  sequence: { type: Number, required: true, min: 0, max: 100 },
+  memory: { type: Number, min: 0, max: 100, default: null },
+  reaction: { type: Number, min: 0, max: 100, default: null },
+  sequence: { type: Number, min: 0, max: 100, default: null },
   speech: { type: Number, min: 0, max: 100, default: null },
+  stroop: { type: Number, min: 0, max: 100, default: null },
 }, { _id: false })
 
 const rawSchema = new mongoose.Schema({
@@ -14,7 +15,9 @@ const rawSchema = new mongoose.Schema({
   speechFluencyScore: { type: Number, min: 0, max: 100 },
   avgWordDuration: { type: Number, default: 0 },
   pauseFrequency: { type: Number, default: 0 },
-}, { _id: false })
+  stroopAccuracy: { type: Number, default: 0 },
+  stroopAvgMs: { type: Number, default: 0 },
+}, { _id: false, strict: false })
 
 const anomalySchema = new mongoose.Schema({
   zScore: { type: Number, default: 0 },

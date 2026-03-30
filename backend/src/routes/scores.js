@@ -21,25 +21,31 @@ router.post('/', async (req, res) => {
     const { userId, taskScores, rawMetrics = {}, timestamp } = req.body
     if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: 'Invalid userId' })
 
-    const MOCK_USER_ID = '000000000000000000000001'
     let user = await User.findById(userId).lean()
     
-    // For prototype/demo, allow the mock user even if not in DB
-    if (!user && userId === MOCK_USER_ID) {
+    // For prototype/demo, allow any valid userId to save even if not in DB
+    if (!user) {
       user = { _id: userId, baseline: { overall: 80 } }
     }
-    
-    if (!user) return res.status(404).json({ message: 'User not found' })
 
-    const memory = clamp(Number(taskScores.memory), 0, 100)
-    const reaction = clamp(Number(taskScores.reaction), 0, 100)
-    const sequence = clamp(Number(taskScores.sequence), 0, 100)
+    const memory = taskScores.memory == null ? null : clamp(Number(taskScores.memory), 0, 100)
+    const reaction = taskScores.reaction == null ? null : clamp(Number(taskScores.reaction), 0, 100)
+    const sequence = taskScores.sequence == null ? null : clamp(Number(taskScores.sequence), 0, 100)
     const speech = taskScores.speech == null ? null : clamp(Number(taskScores.speech), 0, 100)
+    const stroop = taskScores.stroop == null ? null : clamp(Number(taskScores.stroop), 0, 100)
     
-    // Synchronized with frontend weightings (25% each)
-    const totalScore = speech == null
-      ? Math.round(memory * 0.35 + reaction * 0.35 + sequence * 0.3)
-      : Math.round(memory * 0.25 + reaction * 0.25 + sequence * 0.25 + speech * 0.25)
+    // Dynamic weightings based on available tasks
+    const tasks = [
+      { val: memory, w: memory != null ? 1 : 0 },
+      { val: reaction, w: reaction != null ? 1 : 0 },
+      { val: sequence, w: sequence != null ? 1 : 0 },
+      { val: speech, w: speech != null ? 1 : 0 },
+      { val: stroop, w: stroop != null ? 1 : 0 }
+    ]
+    
+    const activeTasks = tasks.filter(t => t.w > 0)
+    const weight = 1 / activeTasks.length
+    const totalScore = Math.round(activeTasks.reduce((sum, t) => sum + (t.val * weight), 0))
 
     const history = await CognitiveScore.find({ userId }).sort({ timestamp: -1 }).limit(30).select('totalScore').lean()
     const arr = history.map((h) => h.totalScore)
@@ -51,7 +57,7 @@ router.post('/', async (req, res) => {
     const score = await CognitiveScore.create({
       userId,
       timestamp: timestamp ? new Date(timestamp) : new Date(),
-      taskScores: { memory, reaction, sequence, speech },
+      taskScores: { memory, reaction, sequence, speech, stroop },
       rawMetrics,
       totalScore,
       anomaly: { zScore, isAnomaly, threshold: -1.5 },
@@ -64,7 +70,8 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ message: 'Score saved', score })
   } catch (error) {
-    res.status(500).json({ message: 'Failed to save score', error: error.message })
+    console.error('SERVER ERROR IN POST /api/scores:', error)
+    res.status(500).json({ message: 'Failed to save score', error: error.message, stack: error.stack })
   }
 })
 
