@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useCognitive } from '../context/CognitiveContext.jsx'
 import { Line, Radar } from 'react-chartjs-2'
 import {
@@ -26,21 +26,41 @@ ChartJS.register(
 
 export default function DashboardScreen() {
   const { latestScore, history, fetchHistory, mockDiagnosticData } = useCognitive()
+  const [chartView, setChartView] = useState('temporal')
 
   useEffect(() => {
     fetchHistory().catch(() => {})
   }, [fetchHistory])
 
-  const { chartData, radarData, progress, avgScore, insight, peakDomain, alertStatus } = useMemo(() => {
-    const labels = history.map(h => new Date(h.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
-    const scores = history.map(h => h.totalScore)
-    
+  const { chartData, chartOptions, radarData, progress, avgScore, insight, peakDomain, alertStatus } = useMemo(() => {
+    const last7 = history.slice(-7).filter(h => h.totalScore > 0)
+    const labels = last7.map((h, i) => {
+      const date = new Date(h.timestamp)
+      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      
+      // If multiple sessions on same day, Add time
+      const isSameDayAsPrev = i > 0 && new Date(last7[i-1].timestamp).toLocaleDateString() === date.toLocaleDateString()
+      const isSameDayAsNext = i < last7.length - 1 && new Date(last7[i+1].timestamp).toLocaleDateString() === date.toLocaleDateString()
+      
+      if (isSameDayAsPrev || isSameDayAsNext) {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+      }
+      return dateStr
+    })
+    const scores = last7.map(h => h.totalScore)
+
+    // Domain breakdowns for Spectral view
+    const memoryScores = last7.map(h => h.taskScores.memory)
+    const reactionScores = last7.map(h => h.taskScores.reaction)
+    const sequenceScores = last7.map(h => h.taskScores.sequence)
+    const speechScores = last7.map(h => h.taskScores.speech || 0)
+
     // Calculate Progress
     let progress = 0
     if (scores.length >= 2) {
-      const last = scores[scores.length - 1]
-      const prev = scores[scores.length - 2]
-      progress = Math.round(((last - prev) / prev) * 100)
+      const lastVal = scores[scores.length - 1]
+      const prevVal = scores[scores.length - 2]
+      progress = Math.round(((lastVal - prevVal) / prevVal) * 100)
     }
 
     const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0
@@ -91,19 +111,54 @@ export default function DashboardScreen() {
       insight,
       peakDomain,
       alertStatus,
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0 // Instantly draw the chart, CSS handles the sweep reveal
+        },
+        animations: {
+          radius: {
+            duration: 1500,
+            easing: 'easeInOutSine',
+            loop: true,
+            from: 4,
+            to: 6
+          }
+        },
+        plugins: { 
+          legend: { 
+            display: chartView === 'spectral',
+            position: 'bottom',
+            labels: { boxWidth: 8, usePointStyle: true, padding: 20, font: { size: 10, weight: '900' } }
+          } 
+        },
+        scales: {
+          y: { min: 30, max: 100, border: { display: false }, grid: { color: '#F8F9FA' }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } },
+          x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } }
+        }
+      },
       chartData: {
-        labels: labels.slice(-7),
-        datasets: [
+        labels,
+        datasets: chartView === 'temporal' ? [
           {
             label: 'Consistency',
-            data: scores.slice(-7),
+            data: scores,
             borderColor: '#1A73E8',
             backgroundColor: 'rgba(26, 115, 232, 0.05)',
             fill: true,
-            tension: 0.4,
+            tension: 0.5, // Curvy string look
             pointRadius: 4,
-            borderWidth: 3
+            borderWidth: 4, // Thicker string
+            pointBackgroundColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 8
           }
+        ] : [
+          { label: 'Memory', data: memoryScores, borderColor: '#1A73E8', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
+          { label: 'Motor', data: reactionScores, borderColor: '#34A853', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
+          { label: 'Sequence', data: sequenceScores, borderColor: '#FBBC04', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
+          { label: 'Speech', data: speechScores, borderColor: '#EA4335', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
         ]
       },
       radarData: {
@@ -127,7 +182,7 @@ export default function DashboardScreen() {
         ]
       }
     }
-  }, [history])
+  }, [history, chartView])
 
   return (
     <section className="fade-in max-w-[1200px] mx-auto px-6 md:px-0 pb-20">
@@ -147,18 +202,19 @@ export default function DashboardScreen() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Progress Stats - Bento Layout */}
         <div className="md:col-span-12 lg:col-span-4 space-y-6">
-          <div className="bg-gradient-to-br from-primary to-[#155DB1] rounded-[40px] shadow-2xl p-10 text-white relative overflow-hidden group">
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 opacity-80">Aggregate Baseline</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-7xl font-black tracking-tighter leading-none">{avgScore}</span>
-              <span className="text-2xl font-bold opacity-60">%</span>
-            </div>
-            <div className="mt-8 flex items-center gap-3">
-              <div className="h-1.5 flex-1 bg-white/20 rounded-full overflow-hidden">
-                <div className="h-full bg-white transition-all duration-1000 shadow-[0_0_15px_rgba(255,255,255,0.8)]" style={{ width: `${avgScore}%` }} />
+          <div className="bg-[#1A73E8] rounded-[40px] shadow-lg p-10 text-white flex flex-col justify-between h-[320px]">
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] mb-4 text-[#E8F0FD]">Aggregate Baseline</p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-8xl font-black tracking-tighter leading-none">{avgScore}</span>
+                <span className="text-3xl font-bold text-[#E8F0FD]">%</span>
               </div>
-              <span className="text-xs font-bold whitespace-nowrap">{history.length} SESSIONS</span>
+            </div>
+            <div className="flex items-center gap-4 w-full">
+              <div className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
+                <div className="h-full bg-white transition-all duration-1000" style={{ width: `${avgScore}%` }} />
+              </div>
+              <span className="text-[11px] font-black uppercase tracking-widest text-white whitespace-nowrap">{history.length} SESSIONS</span>
             </div>
           </div>
           
@@ -217,22 +273,37 @@ export default function DashboardScreen() {
               <p className="text-sm text-textSecondary font-medium">Cross-domain temporal variance (7 sessions)</p>
             </div>
             <div className="flex gap-2 p-1 bg-bg rounded-[16px]">
-              <button className="px-5 py-2 bg-white rounded-[12px] text-[11px] font-black shadow-sm text-primary uppercase tracking-widest">Temporal</button>
-              <button className="px-5 py-2 text-[11px] font-black text-textSecondary uppercase tracking-widest opacity-50">Spectral</button>
+              <button 
+                onClick={() => setChartView('temporal')}
+                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest transition-all ${
+                  chartView === 'temporal' ? 'bg-white shadow-sm text-primary' : 'text-textSecondary opacity-50 hover:opacity-100'
+                }`}
+              >
+                Temporal
+              </button>
+              <button 
+                onClick={() => setChartView('spectral')}
+                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest transition-all ${
+                  chartView === 'spectral' ? 'bg-white shadow-sm text-primary' : 'text-textSecondary opacity-50 hover:opacity-100'
+                }`}
+              >
+                Spectral
+              </button>
             </div>
           </div>
-          <div className="flex-1 min-h-[350px]">
+          <style>{`
+            @keyframes sweepReveal {
+              0% { clip-path: inset(0 100% 0 0); }
+              100% { clip-path: inset(0 0 0 0); }
+            }
+            .chart-sweep {
+              animation: sweepReveal 3s ease-in-out forwards;
+            }
+          `}</style>
+          <div key={chartView} className="flex-1 h-full min-h-[350px] w-full relative chart-sweep">
             <Line
               data={chartData}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                  y: { min: 30, max: 100, border: { display: false }, grid: { color: '#F8F9FA' }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } },
-                  x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } }
-                }
-              }}
+              options={chartOptions}
             />
           </div>
         </div>
