@@ -5,7 +5,7 @@ import TaskWordMemory from './TaskWordMemory.jsx'
 import TaskReactionTime from './TaskReactionTime.jsx'
 import TaskPatternMemory from './TaskPatternMemory.jsx'
 import SpeechAnalyzer from '../SpeechAnalyzer.jsx'
-import FacialAnalyzer from '../FacialAnalyzer.jsx'
+import TaskTyping from './TaskTyping.jsx'
 
 const WORDS = ['APPLE', 'RIVER', 'CLOCK', 'BRIDGE', 'FOREST']
 
@@ -172,7 +172,7 @@ export default function CognitiveTaskScreen() {
                 <span className="text-3xl">📋</span>
               </div>
               <h2 className="text-2xl font-bold text-textPrimary mb-3 group-hover:text-primary transition-colors">Daily Baseline</h2>
-              <p className="text-sm text-textSecondary leading-relaxed mb-8">A comprehensive 4-step assessment of memory, motor speed, pattern recognition, and speech acoustics.</p>
+              <p className="text-sm text-textSecondary leading-relaxed mb-8">A comprehensive 5-step assessment of memory, motor speed, pattern recognition, speech acoustics, and typing fluency.</p>
               <div className="flex items-center text-primary font-bold gap-2 text-sm">
                 Start Session <span>→</span>
               </div>
@@ -211,6 +211,7 @@ export default function CognitiveTaskScreen() {
                     </div>
                   </div>
                 )}
+
               </div>
             </div>
           </div>
@@ -231,7 +232,7 @@ export default function CognitiveTaskScreen() {
               { id: 2, label: 'Motor' },
               { id: 3, label: 'Pattern' },
               { id: 4, label: 'Speech' },
-              { id: 5, label: 'Facial' }
+              { id: 5, label: 'Typing' }
             ].map((s) => (
               <div key={s.id} className="flex flex-col items-center gap-3 bg-bg">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${
@@ -288,29 +289,41 @@ export default function CognitiveTaskScreen() {
 
         {step === 4 && (
           <div className="bg-card rounded-[32px] shadow-card p-10 border border-[#F1F3F4]">
+            <div className="text-center mb-6">
+              <div className="bg-[#E8F0FD] text-primary text-xs font-medium rounded-full px-3 py-1 inline-block">
+                Task 4 of 5 · Speech Fluency
+              </div>
+            </div>
             <SpeechAnalyzer />
             <div className="mt-10 flex justify-center border-t border-[#F1F3F4] pt-8">
               <button
                 onClick={() => setStep(5)}
                 className="px-10 py-5 bg-primary text-white rounded-[20px] font-bold text-lg hover:bg-[#155DB1] transition-all shadow-lg shadow-primary/25"
               >
-                Next: Facial Analysis →
+                Continue to Typing
               </button>
             </div>
           </div>
         )}
 
         {step === 5 && (
-          <div className="bg-card rounded-[32px] shadow-card p-10 border border-[#F1F3F4]">
-            <FacialAnalyzer />
-            <div className="mt-10 flex justify-center border-t border-[#F1F3F4] pt-8">
-              <button
-                onClick={() => navigate('/results')}
-                className="px-10 py-5 bg-primary text-white rounded-[20px] font-bold text-lg hover:bg-[#155DB1] btn-hover shadow-lg shadow-primary/25"
-              >
-                View Final Results
-              </button>
+          <div>
+            <div className="text-center mb-6">
+              <div className="bg-[#E8F0FD] text-primary text-xs font-medium rounded-full px-3 py-1 inline-block">
+                Task 5 of 5 · Typing Fluency
+              </div>
             </div>
+            <TaskTyping
+              onComplete={(results) => {
+                updateCheckIn({
+                  typingScore: results.score,
+                  typingWpm: results.wpm,
+                  typingAccuracy: results.accuracy,
+                  typingErrors: results.errors,
+                })
+                navigate('/results')
+              }}
+            />
           </div>
         )}
       </div>

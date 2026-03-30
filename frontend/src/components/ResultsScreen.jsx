@@ -30,6 +30,7 @@ export default function ResultsScreen() {
     { val: Math.max(0, 100 - (avgReactionMs / 10)), count: 1 },
     { val: checkInData.patternScore, count: 1 },
     { val: checkInData.speechScore, count: checkInData.speechScore > 0 ? 1 : 0 },
+    { val: checkInData.typingScore, count: checkInData.typingScore > 0 ? 1 : 0 },
     { val: checkInData.facialScore, count: checkInData.facialScore > 0 ? 1 : 0 }
   ].filter(t => t.count > 0)
 
@@ -40,6 +41,7 @@ export default function ResultsScreen() {
     { name: 'Motor', score: Math.round(Math.max(0, 100 - (avgReactionMs / 10))), status: 'STABLE', color: 'text-primary' },
     { name: 'Pattern', score: checkInData.patternScore, status: checkInData.patternScore > 60 ? 'OPTIMAL' : 'CALIBRATING', color: 'text-success' },
     { name: 'Speech', score: checkInData.speechScore, status: checkInData.speechScore > 80 ? 'EXCELLENT' : 'NORMAL', color: 'text-primary' },
+    { name: 'Typing', score: checkInData.typingScore, status: checkInData.typingScore > 80 ? 'FAST' : 'BUILDING', color: 'text-primary' },
   ]
   
   if (checkInData.facialScore > 0) {

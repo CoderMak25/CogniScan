@@ -7,14 +7,19 @@ import { CheckCircleIcon } from '@heroicons/react/24/outline'
 
 export default function SpecializedTaskScreen() {
   const { taskType } = useParams()
-  const { unlockTask } = useCognitive()
+  const { unlockTask, saveSpecializedCheckIn } = useCognitive()
   const [complete, setComplete] = useState(false)
   const [lastResult, setLastResult] = useState(null)
   const navigate = useNavigate()
 
-  const handleTaskComplete = (results) => {
+  const handleTaskComplete = async (results) => {
     setLastResult(results)
     if (taskType === 'stroop') unlockTask('number-span')
+    try {
+      await saveSpecializedCheckIn(taskType, results.score, results)
+    } catch (err) {
+      alert(`Failed to save ${taskType} assessment: ${err.message}`)
+    }
     setComplete(true)
   }
 
@@ -36,11 +41,14 @@ export default function SpecializedTaskScreen() {
           <div className="grid grid-cols-2 gap-8 mb-16">
             <div className="p-8 bg-bg rounded-[32px] border border-[#F1F3F4] group-hover:border-success/20 transition-all">
               <span className="block text-[10px] font-black text-textSecondary uppercase mb-2 tracking-widest">Accuracy</span>
-              <span className="text-4xl font-black text-textPrimary tracking-tighter">{Math.round(lastResult.accuracy)}%</span>
+              <span className="text-4xl font-black text-textPrimary tracking-tighter">{Math.round(lastResult?.accuracy || 0)}%</span>
             </div>
             <div className="p-8 bg-bg rounded-[32px] border border-[#F1F3F4] group-hover:border-success/20 transition-all">
-              <span className="block text-[10px] font-black text-textSecondary uppercase mb-2 tracking-widest">Latency</span>
-              <span className="text-4xl font-black text-textPrimary tracking-tighter">{Math.round(lastResult.avgMs)}<span className="text-sm opacity-40 ml-1 font-bold">MS</span></span>
+              <span className="block text-[10px] font-black text-textSecondary uppercase mb-2 tracking-widest">{taskType === 'typing' ? 'WPM' : 'Latency'}</span>
+              <span className="text-4xl font-black text-textPrimary tracking-tighter">
+                {Math.round(lastResult?.avgMs || 0)}
+                <span className="text-sm opacity-40 ml-1 font-bold">MS</span>
+              </span>
             </div>
           </div>
 

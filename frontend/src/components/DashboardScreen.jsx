@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useCognitive } from '../context/CognitiveContext.jsx'
 import { Line, Radar } from 'react-chartjs-2'
 import {
@@ -12,6 +12,16 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
+import {
+  BoltIcon,
+  ChartBarSquareIcon,
+  ExclamationTriangleIcon,
+  MicrophoneIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  Square3Stack3DIcon,
+  Squares2X2Icon,
+} from '@heroicons/react/24/outline'
 
 ChartJS.register(
   CategoryScale,
@@ -26,34 +36,14 @@ ChartJS.register(
 
 export default function DashboardScreen() {
   const { latestScore, history, fetchHistory, mockDiagnosticData } = useCognitive()
-  const [chartView, setChartView] = useState('temporal')
 
   useEffect(() => {
     fetchHistory().catch(() => {})
   }, [fetchHistory])
 
-  const { chartData, chartOptions, radarData, progress, avgScore, insight, peakDomain, alertStatus } = useMemo(() => {
-    const last7 = history.slice(-7).filter(h => h.totalScore > 0)
-    const labels = last7.map((h, i) => {
-      const date = new Date(h.timestamp)
-      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      
-      // If multiple sessions on same day, Add time
-      const isSameDayAsPrev = i > 0 && new Date(last7[i-1].timestamp).toLocaleDateString() === date.toLocaleDateString()
-      const isSameDayAsNext = i < last7.length - 1 && new Date(last7[i+1].timestamp).toLocaleDateString() === date.toLocaleDateString()
-      
-      if (isSameDayAsPrev || isSameDayAsNext) {
-        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
-      }
-      return dateStr
-    })
-    const scores = last7.map(h => h.totalScore)
-
-    // Domain breakdowns for Spectral view
-    const memoryScores = last7.map(h => h.taskScores.memory)
-    const reactionScores = last7.map(h => h.taskScores.reaction)
-    const sequenceScores = last7.map(h => h.taskScores.sequence)
-    const speechScores = last7.map(h => h.taskScores.speech || 0)
+  const { chartData, radarData, avgScore, insight, peakDomain } = useMemo(() => {
+    const labels = history.map((h) => new Date(h.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+    const scores = history.map((h) => h.totalScore)
 
     // Calculate Progress
     let progress = 0
@@ -66,7 +56,7 @@ export default function DashboardScreen() {
     const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0
 
     // Latest Radar Data
-    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80, stroop: 80, facial: 80 }
+    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80, typing: 80, facial: 80 }
     
     // Average Radar Data (Baseline)
     const baselineRadar = history.length > 0 ? {
@@ -74,7 +64,7 @@ export default function DashboardScreen() {
       reaction: Math.round(history.reduce((a,h)=>a+h.taskScores.reaction,0)/history.length),
       sequence: Math.round(history.reduce((a,h)=>a+h.taskScores.sequence,0)/history.length),
       speech: Math.round(history.reduce((a,h)=>a+(h.taskScores.speech||0),0)/history.length),
-      stroop: Math.round(history.reduce((a,h)=>a+(h.taskScores.stroop||0),0)/history.length),
+      typing: Math.round(history.reduce((a,h)=>a+(h.taskScores.typing||0),0)/history.length),
       facial: Math.round(history.reduce((a,h)=>a+(h.taskScores.facial||0),0)/history.length),
     } : last
 
@@ -91,7 +81,8 @@ export default function DashboardScreen() {
         { name: 'Memory', val: last.memory },
         { name: 'Motor', val: last.reaction },
         { name: 'Sequence', val: last.sequence },
-        { name: 'Speech', val: last.speech || 0 }
+        { name: 'Speech', val: last.speech || 0 },
+        { name: 'Typing', val: last.typing || 0 },
       ]
       peakDomain = domainScores.sort((a,b) => b.val - a.val)[0].name
       
@@ -110,73 +101,36 @@ export default function DashboardScreen() {
 
     return {
       avgScore,
-      progress,
       insight,
       peakDomain,
-      alertStatus,
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-          duration: 0 // Instantly draw the chart, CSS handles the sweep reveal
-        },
-        animations: {
-          radius: {
-            duration: 1500,
-            easing: 'easeInOutSine',
-            loop: true,
-            from: 4,
-            to: 6
-          }
-        },
-        plugins: { 
-          legend: { 
-            display: chartView === 'spectral',
-            position: 'bottom',
-            labels: { boxWidth: 8, usePointStyle: true, padding: 20, font: { size: 10, weight: '900' } }
-          } 
-        },
-        scales: {
-          y: { min: 30, max: 100, border: { display: false }, grid: { color: '#F8F9FA' }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } },
-          x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } }
-        }
-      },
       chartData: {
-        labels,
-        datasets: chartView === 'temporal' ? [
+        labels: labels.slice(-7),
+        datasets: [
           {
             label: 'Consistency',
-            data: scores,
+            data: scores.slice(-7),
             borderColor: '#1A73E8',
             backgroundColor: 'rgba(26, 115, 232, 0.05)',
             fill: true,
-            tension: 0.5, // Curvy string look
+            tension: 0.4,
             pointRadius: 4,
-            borderWidth: 4, // Thicker string
-            pointBackgroundColor: '#fff',
-            pointBorderWidth: 2,
-            pointHoverRadius: 8
+            borderWidth: 3,
           }
-        ] : [
-          { label: 'Memory', data: memoryScores, borderColor: '#1A73E8', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
-          { label: 'Motor', data: reactionScores, borderColor: '#34A853', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
-          { label: 'Sequence', data: sequenceScores, borderColor: '#FBBC04', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
-          { label: 'Speech', data: speechScores, borderColor: '#EA4335', tension: 0.5, borderWidth: 3, pointRadius: 2, fill: false },
         ]
       },
       radarData: {
-        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Focus', 'Facial'],
+        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Typing', 'Facial'],
         datasets: [
           {
             label: 'Current Mapping',
-            data: [last.memory, last.reaction, last.sequence, last.speech || 0, last.stroop || Math.round((last.memory + last.sequence)/2), last.facial || 0],
+            data: [last.memory, last.reaction, last.sequence, last.speech || 0, last.typing || 0, last.facial || 0],
             backgroundColor: 'rgba(26, 115, 232, 0.2)',
             borderColor: '#1A73E8',
             borderWidth: 2,
           },
           {
             label: 'Baseline Average',
-            data: [baselineRadar.memory, baselineRadar.reaction, baselineRadar.sequence, baselineRadar.speech, Math.round((baselineRadar.memory + baselineRadar.sequence)/2)],
+            data: [baselineRadar.memory, baselineRadar.reaction, baselineRadar.sequence, baselineRadar.speech, baselineRadar.typing || 0, baselineRadar.facial || 0],
             backgroundColor: 'rgba(52, 168, 83, 0.1)',
             borderColor: '#34A853',
             borderWidth: 1,
@@ -185,16 +139,53 @@ export default function DashboardScreen() {
         ]
       }
     }
-  }, [history, chartView])
+  }, [history])
 
   return (
-    <section className="fade-in max-w-[1200px] mx-auto px-6 md:px-0 pb-10">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter text-textPrimary uppercase leading-none">Neuro Dashboard</h1>
-          <p className="text-textSecondary mt-2 text-sm font-medium opacity-70">Predictive analysis of your neuro-behavioral fingerprint</p>
+    <section className="fade-in max-w-[1240px] mx-auto px-4 md:px-6 pb-24">
+      <div className="mb-12 rounded-[36px] border border-[#E8EDF5] bg-white/80 backdrop-blur-md p-8 md:p-10 shadow-sm">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-4 py-1.5 mb-4">
+              <SparklesIcon className="w-4 h-4" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black">Live Neuro Panel</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-textPrimary uppercase leading-[0.95]">Neuro Dashboard</h1>
+            <p className="text-textSecondary mt-4 text-sm md:text-base font-medium max-w-[560px]">
+              Predictive analysis of your neuro-behavioral fingerprint with longitudinal risk and domain signatures.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-auto">
+            <div className="rounded-2xl border border-[#E8EDF5] bg-white p-4 min-w-[180px]">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-black text-textSecondary mb-2">Sessions</p>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl font-black text-textPrimary">{history.length}</p>
+                <ChartBarSquareIcon className="w-6 h-6 text-primary" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-[#E8EDF5] bg-white p-4 min-w-[180px]">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-black text-textSecondary mb-2">Risk Signal</p>
+              <div className="flex items-center justify-between">
+                <p className={`text-xl font-black ${latestScore?.anomaly?.isAnomaly ? 'text-alert' : 'text-success'}`}>
+                  {latestScore?.anomaly?.isAnomaly ? 'Elevated' : 'Normal'}
+                </p>
+                {latestScore?.anomaly?.isAnomaly ? (
+                  <ExclamationTriangleIcon className="w-6 h-6 text-alert" />
+                ) : (
+                  <ShieldCheckIcon className="w-6 h-6 text-success" />
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-6 bg-white/50 backdrop-blur-md border border-[#F1F3F4] rounded-full px-6 py-3 shadow-sm">
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight text-textPrimary">Clinical Overview</h2>
+          <p className="text-textSecondary mt-2 text-sm font-medium opacity-80">Current state across cognition, motor latency, and verbal fluency.</p>
+        </div>
+        <div className="flex items-center gap-3 bg-white border border-[#E8EDF5] rounded-full px-6 py-3 shadow-sm">
           <div className={`w-3 h-3 rounded-full ${latestScore?.anomaly?.isAnomaly ? 'bg-alert' : 'bg-success'} animate-pulse`} />
           <span className="text-xs font-black text-textPrimary uppercase tracking-widest">
             {latestScore?.anomaly?.isAnomaly ? 'Critical Drift' : 'Clinical Baseline Stable'}
@@ -202,126 +193,129 @@ export default function DashboardScreen() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Progress Stats - Bento Layout */}
-        <div className="md:col-span-12 lg:col-span-4 space-y-4">
-          <div className="bg-[#1A73E8] rounded-[32px] shadow-lg p-8 text-white flex flex-col justify-between h-[240px]">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-[#E8F0FD]">Aggregate Baseline</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-7xl font-black tracking-tighter leading-none">{avgScore}</span>
-                <span className="text-2xl font-bold text-[#E8F0FD]">%</span>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div className="md:col-span-12 lg:col-span-4 space-y-6">
+          <div className="bg-linear-to-br from-primary to-[#155DB1] rounded-[36px] shadow-2xl p-8 text-white relative overflow-hidden group">
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
+            <div className="flex items-center gap-2 mb-6 opacity-90">
+              <BoltIcon className="w-4 h-4" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]">Aggregate Baseline</p>
             </div>
-            <div className="flex items-center gap-4 w-full">
-              <div className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
-                <div className="h-full bg-white transition-all duration-1000" style={{ width: `${avgScore}%` }} />
+            <div className="flex items-baseline gap-2">
+              <span className="text-6xl md:text-7xl font-black tracking-tighter leading-none">{avgScore}</span>
+              <span className="text-2xl font-bold opacity-60">%</span>
+            </div>
+            <div className="mt-8 flex items-center gap-3">
+              <div className="h-1.5 flex-1 bg-white/20 rounded-full overflow-hidden">
+                <div className="h-full bg-white transition-all duration-1000 shadow-[0_0_15px_rgba(255,255,255,0.8)]" style={{ width: `${avgScore}%` }} />
               </div>
-              <span className="text-[11px] font-black uppercase tracking-widest text-white whitespace-nowrap">{history.length} SESSIONS</span>
+              <span className="text-xs font-bold whitespace-nowrap">{history.length} SESSIONS</span>
             </div>
           </div>
           
-          <div className="space-y-3 mb-8">
-            {/* Speech Box */}
-            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '0ms' }}>
+          <div className="space-y-4">
+            <div className="bg-white rounded-[30px] shadow-sm border border-[#E8EDF5] p-5 flex items-center justify-between group hover:shadow-md transition-all">
               <div>
-                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Speech</p>
+                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Speech</p>
                 <div className="text-2xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.rawMetrics?.speechFluencyScore || '40'} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">Fluency Task</span>
+                  {latestScore?.rawMetrics?.speechFluencyScore || '40'} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">Fluency Task</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🎙️</div>
+              <div className="w-14 h-14 bg-bg rounded-2xl flex items-center justify-center shadow-sm text-primary">
+                <MicrophoneIcon className="w-7 h-7" />
+              </div>
             </div>
 
-            {/* Stroop Box */}
-            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '50ms' }}>
+            <div className="bg-white rounded-[30px] shadow-sm border border-[#E8EDF5] p-5 flex items-center justify-between group hover:shadow-md transition-all">
               <div>
-                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Stroop</p>
+                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Stroop</p>
                 <div className="text-2xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.taskScores?.stroop || mockDiagnosticData.stroop.score} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
+                  {latestScore?.taskScores?.stroop || mockDiagnosticData.stroop.score} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🎯</div>
+              <div className="w-14 h-14 bg-bg rounded-2xl flex items-center justify-center shadow-sm text-primary">
+                <Squares2X2Icon className="w-7 h-7" />
+              </div>
             </div>
 
-            {/* Working Memory Box */}
-            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '100ms' }}>
+            <div className="bg-white rounded-[30px] shadow-sm border border-[#E8EDF5] p-5 flex items-center justify-between group hover:shadow-md transition-all">
               <div>
-                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Working Memory</p>
+                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Working Memory</p>
                 <div className="text-2xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.taskScores?.numberSpan || mockDiagnosticData.numberSpan.score} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
+                  {latestScore?.taskScores?.numberSpan || mockDiagnosticData.numberSpan.score} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🔢</div>
+              <div className="w-14 h-14 bg-bg rounded-2xl flex items-center justify-center shadow-sm text-primary">
+                <Square3Stack3DIcon className="w-7 h-7" />
+              </div>
             </div>
 
-            {/* Acoustic Drifts Box */}
-            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '150ms' }}>
+            <div className="bg-white rounded-[30px] shadow-sm border border-[#E8EDF5] p-5 flex items-center justify-between group hover:shadow-md transition-all">
               <div>
-                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1 font-bold">Acoustic Drifts</p>
+                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Typing</p>
                 <div className="text-2xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.rawMetrics?.pauseFrequency || '0'} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">p/m</span>
+                  {latestScore?.taskScores?.typing || 0} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">speed + accuracy</span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🔊</div>
+              <div className="w-14 h-14 bg-bg rounded-2xl flex items-center justify-center shadow-sm text-primary">
+                <BoltIcon className="w-7 h-7" />
+              </div>
             </div>
-          </div>
 
-          <div className="bg-card rounded-[24px] shadow-card p-6 border-b-4 border-[#8B5CF6]">
-            <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Facial Stability</p>
-            <div className="text-4xl font-bold text-[#8B5CF6]">{latestScore?.taskScores?.facial ?? '--'}</div>
-            <p className="text-xs font-medium text-textSecondary mt-3">Blink rate: {latestScore?.rawMetrics?.facialBlinkRate || 0}/s</p>
+            <div className="bg-white rounded-[30px] shadow-sm border border-[#E8EDF5] p-5 flex items-center justify-between group hover:shadow-md transition-all">
+              <div>
+                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Acoustic Drifts</p>
+                <div className="text-2xl font-black text-textPrimary tracking-tight">
+                  {latestScore?.rawMetrics?.pauseFrequency || '0'} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">p/m</span>
+                </div>
+              </div>
+              <div className="w-14 h-14 bg-bg rounded-2xl flex items-center justify-center shadow-sm text-primary">
+                <ChartBarSquareIcon className="w-7 h-7" />
+              </div>
+            </div>
+            {latestScore?.taskScores?.facial > 0 && (
+              <div className="bg-white rounded-[30px] shadow-sm border border-[#E8EDF5] p-5 flex items-center justify-between group hover:shadow-md transition-all">
+                <div>
+                  <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Facial</p>
+                  <div className="text-2xl font-black text-textPrimary tracking-tight">
+                    {latestScore?.taskScores?.facial || 0} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">stability</span>
+                  </div>
+                </div>
+                <div className="w-14 h-14 bg-bg rounded-2xl flex items-center justify-center shadow-sm text-primary">
+                  <SparklesIcon className="w-7 h-7" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Global Trend - The Hero Chart */}
-        <div className="md:col-span-12 lg:col-span-8 bg-card rounded-[32px] shadow-card p-8 border border-[#F1F3F4] flex flex-col group">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="md:col-span-12 lg:col-span-8 bg-card rounded-[36px] shadow-card p-8 md:p-10 border border-[#E8EDF5] flex flex-col group">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
             <div>
-              <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter">Consistency Dynamics</h3>
-              <p className="text-sm text-textSecondary font-medium">Cross-domain temporal variance (7 sessions)</p>
-            </div>
-            <div className="flex gap-2 p-1 bg-bg rounded-[16px]">
-              <button 
-                onClick={() => setChartView('temporal')}
-                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest btn-hover ${
-                  chartView === 'temporal' ? 'bg-white shadow-sm text-primary' : 'text-textSecondary opacity-50 hover:opacity-100'
-                }`}
-              >
-                Temporal
-              </button>
-              <button 
-                onClick={() => setChartView('spectral')}
-                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest btn-hover ${
-                  chartView === 'spectral' ? 'bg-white shadow-sm text-primary' : 'text-textSecondary opacity-50 hover:opacity-100'
-                }`}
-              >
-                Spectral
-              </button>
+              <h3 className="text-xl md:text-2xl font-black text-textPrimary uppercase tracking-tight">Consistency Dynamics</h3>
+              <p className="text-sm text-textSecondary font-medium mt-1">Cross-domain temporal variance (7 sessions)</p>
             </div>
           </div>
-          <style>{`
-            @keyframes sweepReveal {
-              0% { clip-path: inset(0 100% 0 0); }
-              100% { clip-path: inset(0 0 0 0); }
-            }
-            .chart-sweep {
-              animation: sweepReveal 3s ease-in-out forwards;
-            }
-          `}</style>
-          <div key={chartView} className="flex-1 h-full min-h-[250px] w-full relative chart-sweep">
+          <div className="flex-1 min-h-[350px]">
             <Line
               data={chartData}
-              options={chartOptions}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: { min: 30, max: 100, border: { display: false }, grid: { color: '#F8F9FA' }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } },
+                  x: { border: { display: false }, grid: { display: false }, ticks: { font: { size: 10, weight: '900' }, color: '#BDC1C6', padding: 10 } }
+                }
+              }}
             />
           </div>
         </div>
 
-        {/* Domain Mapping - Radar */}
-        <div className="md:col-span-12 lg:col-span-7 bg-card rounded-[32px] shadow-card p-8 border border-[#F1F3F4] relative overflow-hidden group">
-          <div className="absolute right-8 top-8 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
-          <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter mb-8">Functional Cartography</h3>
-          <div className="h-[280px]">
+        <div className="md:col-span-12 lg:col-span-7 bg-card rounded-[36px] shadow-card p-8 md:p-10 border border-[#E8EDF5] relative overflow-hidden group">
+          <div className="absolute right-10 top-10 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
+          <h3 className="text-xl md:text-2xl font-black text-textPrimary uppercase tracking-tight mb-10">Functional Cartography</h3>
+          <div className="h-[400px]">
             <Radar
               data={radarData}
               options={{
@@ -342,21 +336,20 @@ export default function DashboardScreen() {
           </div>
         </div>
 
-        {/* AI Insight - The Final Card */}
-        <div className="md:col-span-12 lg:col-span-5 bg-card rounded-[32px] shadow-card p-8 border border-[#F1F3F4] flex flex-col bg-[radial-gradient(at_top_right,#E8F0FD_0%,transparent_50%)]">
-          <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter mb-6 italic">Cognitive Summary</h3>
+        <div className="md:col-span-12 lg:col-span-5 bg-card rounded-[36px] shadow-card p-8 md:p-10 border border-[#E8EDF5] flex flex-col bg-[radial-gradient(at_top_right,#E8F0FD_0%,transparent_50%)]">
+          <h3 className="text-xl md:text-2xl font-black text-textPrimary uppercase tracking-tight mb-8 italic">Cognitive Summary</h3>
           <div className="flex-1 flex flex-col">
-            <div className="bg-white/60 backdrop-blur-sm border border-[#E8F0FD] p-6 rounded-[24px] mb-6 shadow-sm">
-              <span className="inline-block px-3 py-1 bg-primary text-[10px] font-black text-white rounded-full mb-4 uppercase tracking-widest">Model Consensus</span>
-              <p className="text-base font-bold text-textPrimary leading-relaxed tracking-tight italic">
+            <div className="bg-white/60 backdrop-blur-sm border border-[#E8F0FD] p-8 rounded-[32px] mb-8 shadow-sm">
+              <span className="inline-block px-3 py-1 bg-primary text-[10px] font-black text-white rounded-full mb-6 uppercase tracking-widest">Model Consensus</span>
+              <p className="text-lg font-bold text-textPrimary leading-relaxed tracking-tight italic">
                 "{insight}"
               </p>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 mt-auto">
-              <div className="p-5 bg-bg rounded-[20px] border border-[#F1F3F4] group hover:border-primary transition-all">
-                <span className="block text-[10px] font-black text-textSecondary uppercase mb-1">Dominant</span>
-                <span className="text-lg font-black text-primary uppercase">{peakDomain}</span>
+            <div className="grid grid-cols-2 gap-6 mt-auto">
+              <div className="p-6 bg-bg rounded-[24px] border border-[#F1F3F4] group hover:border-primary transition-all">
+                <span className="block text-[10px] font-black text-textSecondary uppercase mb-2">Dominant</span>
+                <span className="text-xl font-black text-primary uppercase">{peakDomain}</span>
               </div>
               <div className="p-6 bg-bg rounded-[24px] border border-[#F1F3F4] group hover:border-[#F1F3F4] transition-all">
                 <span className="block text-[10px] font-black text-textSecondary uppercase mb-2">Risk Factor</span>
