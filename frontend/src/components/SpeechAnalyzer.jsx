@@ -227,7 +227,7 @@ export default function SpeechAnalyzer() {
               <button
                 onClick={() => (recording ? stop() : start())}
                 disabled={processing}
-                className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-xl active:scale-95 ${
+                className={`w-24 h-24 rounded-full flex items-center justify-center btn-hover shadow-xl ${
                   recording ? 'bg-alert shadow-alert/30' : 'bg-primary shadow-primary/30'
                 } ${processing ? 'opacity-50' : ''}`}
               >
@@ -239,7 +239,7 @@ export default function SpeechAnalyzer() {
               </div>
             </div>
 
-            <canvas ref={canvasRef} width={600} height={60} className={`w-full h-16 bg-white rounded-2xl border border-[#F1F3F4] transition-all ${recording ? 'opacity-100 scale-100' : 'opacity-20 scale-95'}`} />
+            <canvas ref={canvasRef} width={600} height={60} className={`w-full h-16 bg-white rounded-2xl border border-[#F1F3F4] transition-[opacity,transform] duration-[300ms] ease-[cubic-bezier(0.23,1,0.32,1)] ${recording ? 'opacity-100 scale-100' : 'opacity-20 scale-95'}`} />
           </div>
         </div>
       </div>

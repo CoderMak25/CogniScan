@@ -96,7 +96,7 @@ export default function TaskNumberSpan({ onComplete }) {
             <p className="text-textSecondary mb-10 font-medium">Test your auditory-visual loop by recalling incresing sequences of digits.</p>
             <button 
               onClick={startLevel}
-              className="px-12 py-5 bg-primary text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:scale-105 transition-all"
+              className="px-12 py-5 bg-primary text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 btn-hover"
             >
               Begin Assessment
             </button>
@@ -123,7 +123,7 @@ export default function TaskNumberSpan({ onComplete }) {
             />
             <button 
               type="submit"
-              className="mt-10 px-12 py-5 bg-textPrimary text-white rounded-[24px] font-black text-sm uppercase tracking-widest hover:bg-black transition-all"
+              className="mt-10 px-12 py-5 bg-textPrimary text-white rounded-[24px] font-black text-sm uppercase tracking-widest hover:bg-black btn-hover"
             >
               Verify Sequence
             </button>

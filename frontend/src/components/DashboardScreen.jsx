@@ -185,11 +185,11 @@ export default function DashboardScreen() {
   }, [history, chartView])
 
   return (
-    <section className="fade-in max-w-[1200px] mx-auto px-6 md:px-0 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-16">
+    <section className="fade-in max-w-[1200px] mx-auto px-6 md:px-0 pb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-5xl font-black tracking-tighter text-textPrimary uppercase leading-none">Neuro Dashboard</h1>
-          <p className="text-textSecondary mt-4 text-base font-medium opacity-70">Predictive analysis of your neuro-behavioral fingerprint</p>
+          <h1 className="text-4xl font-black tracking-tighter text-textPrimary uppercase leading-none">Neuro Dashboard</h1>
+          <p className="text-textSecondary mt-2 text-sm font-medium opacity-70">Predictive analysis of your neuro-behavioral fingerprint</p>
         </div>
         <div className="flex items-center gap-6 bg-white/50 backdrop-blur-md border border-[#F1F3F4] rounded-full px-6 py-3 shadow-sm">
           <div className={`w-3 h-3 rounded-full ${latestScore?.anomaly?.isAnomaly ? 'bg-alert' : 'bg-success'} animate-pulse`} />
@@ -199,15 +199,15 @@ export default function DashboardScreen() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Progress Stats - Bento Layout */}
-        <div className="md:col-span-12 lg:col-span-4 space-y-6">
-          <div className="bg-[#1A73E8] rounded-[40px] shadow-lg p-10 text-white flex flex-col justify-between h-[320px]">
+        <div className="md:col-span-12 lg:col-span-4 space-y-4">
+          <div className="bg-[#1A73E8] rounded-[32px] shadow-lg p-8 text-white flex flex-col justify-between h-[240px]">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] mb-4 text-[#E8F0FD]">Aggregate Baseline</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 text-[#E8F0FD]">Aggregate Baseline</p>
               <div className="flex items-baseline gap-1">
-                <span className="text-8xl font-black tracking-tighter leading-none">{avgScore}</span>
-                <span className="text-3xl font-bold text-[#E8F0FD]">%</span>
+                <span className="text-7xl font-black tracking-tighter leading-none">{avgScore}</span>
+                <span className="text-2xl font-bold text-[#E8F0FD]">%</span>
               </div>
             </div>
             <div className="flex items-center gap-4 w-full">
@@ -218,56 +218,56 @@ export default function DashboardScreen() {
             </div>
           </div>
           
-          <div className="space-y-4 mb-16">
+          <div className="space-y-3 mb-8">
             {/* Speech Box */}
-            <div className="bg-white rounded-[40px] shadow-sm border border-[#D1E3FF] p-6 flex items-center justify-between group hover:shadow-md transition-all">
+            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '0ms' }}>
               <div>
-                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Speech</p>
-                <div className="text-3xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.rawMetrics?.speechFluencyScore || '40'} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">Fluency Task</span>
+                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Speech</p>
+                <div className="text-2xl font-black text-textPrimary tracking-tight">
+                  {latestScore?.rawMetrics?.speechFluencyScore || '40'} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">Fluency Task</span>
                 </div>
               </div>
-              <div className="w-16 h-16 bg-[#F8F9FA] rounded-[24px] flex items-center justify-center shadow-sm text-2xl">🎙️</div>
+              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🎙️</div>
             </div>
 
             {/* Stroop Box */}
-            <div className="bg-white rounded-[40px] shadow-sm border border-[#D1E3FF] p-6 flex items-center justify-between group hover:shadow-md transition-all">
+            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '50ms' }}>
               <div>
-                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Stroop</p>
-                <div className="text-3xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.taskScores?.stroop || mockDiagnosticData.stroop.score} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
+                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Stroop</p>
+                <div className="text-2xl font-black text-textPrimary tracking-tight">
+                  {latestScore?.taskScores?.stroop || mockDiagnosticData.stroop.score} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
                 </div>
               </div>
-              <div className="w-16 h-16 bg-[#F8F9FA] rounded-[24px] flex items-center justify-center shadow-sm text-2xl">🎯</div>
+              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🎯</div>
             </div>
 
             {/* Working Memory Box */}
-            <div className="bg-white rounded-[40px] shadow-sm border border-[#D1E3FF] p-6 flex items-center justify-between group hover:shadow-md transition-all">
+            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '100ms' }}>
               <div>
-                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Working Memory</p>
-                <div className="text-3xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.taskScores?.numberSpan || mockDiagnosticData.numberSpan.score} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
+                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1">Working Memory</p>
+                <div className="text-2xl font-black text-textPrimary tracking-tight">
+                  {latestScore?.taskScores?.numberSpan || mockDiagnosticData.numberSpan.score} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">Mock Baseline</span>
                 </div>
               </div>
-              <div className="w-16 h-16 bg-[#F8F9FA] rounded-[24px] flex items-center justify-center shadow-sm text-2xl">🔢</div>
+              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🔢</div>
             </div>
 
             {/* Acoustic Drifts Box */}
-            <div className="bg-white rounded-[40px] shadow-sm border border-[#D1E3FF] p-6 flex items-center justify-between group hover:shadow-md transition-all">
+            <div className="bg-white rounded-[32px] shadow-sm border border-[#D1E3FF] p-5 flex items-center justify-between group fade-in" style={{ animationDelay: '150ms' }}>
               <div>
-                <p className="text-[11px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1 font-bold">Acoustic Drifts</p>
-                <div className="text-3xl font-black text-textPrimary tracking-tight">
-                  {latestScore?.rawMetrics?.pauseFrequency || '0'} <span className="text-xs font-bold text-[#80868b] lowercase ml-1">p/m</span>
+                <p className="text-[10px] font-black text-[#80868b] uppercase tracking-[0.2em] mb-1 font-bold">Acoustic Drifts</p>
+                <div className="text-2xl font-black text-textPrimary tracking-tight">
+                  {latestScore?.rawMetrics?.pauseFrequency || '0'} <span className="text-[10px] font-bold text-[#80868b] lowercase ml-1">p/m</span>
                 </div>
               </div>
-              <div className="w-16 h-16 bg-[#F8F9FA] rounded-[24px] flex items-center justify-center shadow-sm text-2xl">🔊</div>
+              <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🔊</div>
             </div>
           </div>
         </div>
 
         {/* Global Trend - The Hero Chart */}
-        <div className="md:col-span-12 lg:col-span-8 bg-card rounded-[40px] shadow-card p-10 md:p-12 border border-[#F1F3F4] flex flex-col group">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12">
+        <div className="md:col-span-12 lg:col-span-8 bg-card rounded-[32px] shadow-card p-8 border border-[#F1F3F4] flex flex-col group">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
               <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter">Consistency Dynamics</h3>
               <p className="text-sm text-textSecondary font-medium">Cross-domain temporal variance (7 sessions)</p>
@@ -275,7 +275,7 @@ export default function DashboardScreen() {
             <div className="flex gap-2 p-1 bg-bg rounded-[16px]">
               <button 
                 onClick={() => setChartView('temporal')}
-                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest transition-all ${
+                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest btn-hover ${
                   chartView === 'temporal' ? 'bg-white shadow-sm text-primary' : 'text-textSecondary opacity-50 hover:opacity-100'
                 }`}
               >
@@ -283,7 +283,7 @@ export default function DashboardScreen() {
               </button>
               <button 
                 onClick={() => setChartView('spectral')}
-                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest transition-all ${
+                className={`px-5 py-2 rounded-[12px] text-[11px] font-black uppercase tracking-widest btn-hover ${
                   chartView === 'spectral' ? 'bg-white shadow-sm text-primary' : 'text-textSecondary opacity-50 hover:opacity-100'
                 }`}
               >
@@ -300,7 +300,7 @@ export default function DashboardScreen() {
               animation: sweepReveal 3s ease-in-out forwards;
             }
           `}</style>
-          <div key={chartView} className="flex-1 h-full min-h-[350px] w-full relative chart-sweep">
+          <div key={chartView} className="flex-1 h-full min-h-[250px] w-full relative chart-sweep">
             <Line
               data={chartData}
               options={chartOptions}
@@ -309,10 +309,10 @@ export default function DashboardScreen() {
         </div>
 
         {/* Domain Mapping - Radar */}
-        <div className="md:col-span-12 lg:col-span-7 bg-card rounded-[40px] shadow-card p-12 border border-[#F1F3F4] relative overflow-hidden group">
-          <div className="absolute right-10 top-10 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
-          <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter mb-12">Functional Cartography</h3>
-          <div className="h-[400px]">
+        <div className="md:col-span-12 lg:col-span-7 bg-card rounded-[32px] shadow-card p-8 border border-[#F1F3F4] relative overflow-hidden group">
+          <div className="absolute right-8 top-8 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
+          <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter mb-8">Functional Cartography</h3>
+          <div className="h-[280px]">
             <Radar
               data={radarData}
               options={{
@@ -334,20 +334,20 @@ export default function DashboardScreen() {
         </div>
 
         {/* AI Insight - The Final Card */}
-        <div className="md:col-span-12 lg:col-span-5 bg-card rounded-[40px] shadow-card p-12 border border-[#F1F3F4] flex flex-col bg-[radial-gradient(at_top_right,#E8F0FD_0%,transparent_50%)]">
-          <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter mb-8 italic">Cognitive Summary</h3>
+        <div className="md:col-span-12 lg:col-span-5 bg-card rounded-[32px] shadow-card p-8 border border-[#F1F3F4] flex flex-col bg-[radial-gradient(at_top_right,#E8F0FD_0%,transparent_50%)]">
+          <h3 className="text-xl font-black text-textPrimary uppercase tracking-tighter mb-6 italic">Cognitive Summary</h3>
           <div className="flex-1 flex flex-col">
-            <div className="bg-white/60 backdrop-blur-sm border border-[#E8F0FD] p-8 rounded-[32px] mb-8 shadow-sm">
-              <span className="inline-block px-3 py-1 bg-primary text-[10px] font-black text-white rounded-full mb-6 uppercase tracking-widest">Model Consensus</span>
-              <p className="text-lg font-bold text-textPrimary leading-relaxed tracking-tight italic">
+            <div className="bg-white/60 backdrop-blur-sm border border-[#E8F0FD] p-6 rounded-[24px] mb-6 shadow-sm">
+              <span className="inline-block px-3 py-1 bg-primary text-[10px] font-black text-white rounded-full mb-4 uppercase tracking-widest">Model Consensus</span>
+              <p className="text-base font-bold text-textPrimary leading-relaxed tracking-tight italic">
                 "{insight}"
               </p>
             </div>
             
-            <div className="grid grid-cols-2 gap-6 mt-auto">
-              <div className="p-6 bg-bg rounded-[24px] border border-[#F1F3F4] group hover:border-primary transition-all">
-                <span className="block text-[10px] font-black text-textSecondary uppercase mb-2">Dominant</span>
-                <span className="text-xl font-black text-primary uppercase">{peakDomain}</span>
+            <div className="grid grid-cols-2 gap-4 mt-auto">
+              <div className="p-5 bg-bg rounded-[20px] border border-[#F1F3F4] group hover:border-primary transition-all">
+                <span className="block text-[10px] font-black text-textSecondary uppercase mb-1">Dominant</span>
+                <span className="text-lg font-black text-primary uppercase">{peakDomain}</span>
               </div>
               <div className="p-6 bg-bg rounded-[24px] border border-[#F1F3F4] group hover:border-[#F1F3F4] transition-all">
                 <span className="block text-[10px] font-black text-textSecondary uppercase mb-2">Risk Factor</span>

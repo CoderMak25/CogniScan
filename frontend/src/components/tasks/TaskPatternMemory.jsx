@@ -54,7 +54,7 @@ export default function TaskPatternMemory({
           <p className="text-textSecondary mb-10">Sequence logic baseline established.</p>
           <button
             onClick={onFinish}
-            className="w-full bg-primary text-white py-5 rounded-[20px] font-bold text-lg hover:bg-[#155DB1] transition-all shadow-lg shadow-primary/25 active:scale-[0.98]"
+            className="w-full bg-primary text-white py-5 rounded-[20px] font-bold text-lg hover:bg-[#155DB1] btn-hover shadow-lg shadow-primary/25"
           >
             Continue to Speech Analysis →
           </button>
@@ -64,7 +64,7 @@ export default function TaskPatternMemory({
       {!sequenceStarted && round < 3 && (
         <button
           onClick={onStart}
-          className="mt-8 bg-primary text-white rounded-[20px] px-10 py-5 font-bold text-lg hover:bg-[#155DB1] transition-all shadow-lg shadow-primary/25 active:scale-[0.98]"
+          className="mt-8 bg-primary text-white rounded-[20px] px-10 py-5 font-bold text-lg hover:bg-[#155DB1] btn-hover shadow-lg shadow-primary/25"
         >
           Begin Sequence
         </button>

@@ -47,13 +47,13 @@ export default function SpecializedTaskScreen() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <button 
               onClick={() => navigate('/dashboard')}
-              className="px-12 py-6 bg-primary text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:bg-[#155DB1] hover:scale-[1.02] transition-all active:scale-95"
+              className="px-12 py-6 bg-primary text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:bg-[#155DB1] btn-hover"
             >
               Analyze Dashboard
             </button>
             <button 
               onClick={() => navigate('/tasks')}
-              className="px-12 py-6 bg-white text-textPrimary border border-[#F1F3F4] rounded-[24px] font-black text-sm uppercase tracking-widest hover:border-primary transition-all active:scale-95"
+              className="px-12 py-6 bg-white text-textPrimary border border-[#F1F3F4] rounded-[24px] font-black text-sm uppercase tracking-widest hover:border-primary btn-hover"
             >
               Exit Portal
             </button>

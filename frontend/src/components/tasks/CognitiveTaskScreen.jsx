@@ -290,7 +290,7 @@ export default function CognitiveTaskScreen() {
             <div className="mt-10 flex justify-center border-t border-[#F1F3F4] pt-8">
               <button
                 onClick={() => navigate('/results')}
-                className="px-10 py-5 bg-primary text-white rounded-[20px] font-bold text-lg hover:bg-[#155DB1] transition-all shadow-lg shadow-primary/25"
+                className="px-10 py-5 bg-primary text-white rounded-[20px] font-bold text-lg hover:bg-[#155DB1] btn-hover shadow-lg shadow-primary/25"
               >
                 View Final Results
               </button>

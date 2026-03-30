@@ -44,7 +44,7 @@ export default function NavBar() {
         <div className="flex items-center gap-6">
           <button
             onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-bg border border-[#F1F3F4] hover:border-primary hover:text-primary transition-all text-sm font-bold text-textSecondary shadow-sm group active:scale-95"
+            className="flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-bg border border-[#F1F3F4] hover:border-primary hover:text-primary btn-hover text-sm font-bold text-textSecondary shadow-sm group"
           >
             <span className="w-2.5 h-2.5 rounded-full bg-alert animate-pulse"></span>
             Monitor Caregiver

@@ -84,7 +84,7 @@ export default function ResultsScreen() {
           <button
             onClick={handleFinish}
             disabled={isSaving}
-            className="w-full bg-primary text-white py-6 rounded-[32px] font-black text-xl uppercase tracking-widest hover:bg-[#155DB1] hover:scale-[1.02] transition-all shadow-2xl shadow-primary/30 disabled:opacity-50 active:scale-95"
+            className="w-full bg-primary text-white py-6 rounded-[32px] font-black text-xl uppercase tracking-widest hover:bg-[#155DB1] btn-hover shadow-2xl shadow-primary/30 disabled:opacity-50"
           >
             {isSaving ? 'Synchronizing Pipeline...' : 'Commit to Dashboard'}
           </button>
