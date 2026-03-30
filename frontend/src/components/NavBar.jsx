@@ -8,6 +8,7 @@ export default function NavBar() {
     { to: '/tasks', label: 'Tasks' },
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/speech', label: 'Speech Analysis' },
+    { to: '/facial', label: 'Facial Analysis' },
     { to: '/insights', label: 'ML Insights' },
   ]
 

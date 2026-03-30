@@ -66,7 +66,7 @@ export default function DashboardScreen() {
     const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0
 
     // Latest Radar Data
-    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80 }
+    const last = history[history.length - 1]?.taskScores || { memory: 80, reaction: 80, sequence: 80, speech: 80, stroop: 80, facial: 80 }
     
     // Average Radar Data (Baseline)
     const baselineRadar = history.length > 0 ? {
@@ -74,6 +74,8 @@ export default function DashboardScreen() {
       reaction: Math.round(history.reduce((a,h)=>a+h.taskScores.reaction,0)/history.length),
       sequence: Math.round(history.reduce((a,h)=>a+h.taskScores.sequence,0)/history.length),
       speech: Math.round(history.reduce((a,h)=>a+(h.taskScores.speech||0),0)/history.length),
+      stroop: Math.round(history.reduce((a,h)=>a+(h.taskScores.stroop||0),0)/history.length),
+      facial: Math.round(history.reduce((a,h)=>a+(h.taskScores.facial||0),0)/history.length),
     } : last
 
     // Dynamic Insight Logic
@@ -104,6 +106,7 @@ export default function DashboardScreen() {
         insight = `Your cognitive fingerprint remains highly stable. Peak performance noted in ${peakDomain} retrieval and pattern matching.`
       }
     }
+
 
     return {
       avgScore,
@@ -162,11 +165,11 @@ export default function DashboardScreen() {
         ]
       },
       radarData: {
-        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Focus'],
+        labels: ['Memory', 'Motor', 'Sequence', 'Speech', 'Focus', 'Facial'],
         datasets: [
           {
             label: 'Current Mapping',
-            data: [last.memory, last.reaction, last.sequence, last.speech || 0, Math.round((last.memory + last.sequence)/2)],
+            data: [last.memory, last.reaction, last.sequence, last.speech || 0, last.stroop || Math.round((last.memory + last.sequence)/2), last.facial || 0],
             backgroundColor: 'rgba(26, 115, 232, 0.2)',
             borderColor: '#1A73E8',
             borderWidth: 2,
@@ -262,6 +265,12 @@ export default function DashboardScreen() {
               </div>
               <div className="w-12 h-12 bg-[#F8F9FA] rounded-[18px] flex items-center justify-center shadow-sm text-xl">🔊</div>
             </div>
+          </div>
+
+          <div className="bg-card rounded-[24px] shadow-card p-6 border-b-4 border-[#8B5CF6]">
+            <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Facial Stability</p>
+            <div className="text-4xl font-bold text-[#8B5CF6]">{latestScore?.taskScores?.facial ?? '--'}</div>
+            <p className="text-xs font-medium text-textSecondary mt-3">Blink rate: {latestScore?.rawMetrics?.facialBlinkRate || 0}/s</p>
           </div>
         </div>
 

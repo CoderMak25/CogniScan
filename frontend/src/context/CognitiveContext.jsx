@@ -23,6 +23,11 @@ export function CognitiveProvider({ children }) {
     stroopAccuracy: 0,
     stroopAvgMs: 0,
     speechCompleted: false,
+    facialScore: 0,
+    facialBlinkRate: 0,
+    facialStabilityScore: 0,
+    facialEyeClosureTime: 0,
+    facialCompleted: false,
     totalScore: 0,
   })
 
@@ -44,6 +49,11 @@ export function CognitiveProvider({ children }) {
       stroopAccuracy: 0,
       stroopAvgMs: 0,
       speechCompleted: false,
+      facialScore: 0,
+      facialBlinkRate: 0,
+      facialStabilityScore: 0,
+      facialEyeClosureTime: 0,
+      facialCompleted: false,
       totalScore: 0,
     })
   }, [])
@@ -68,12 +78,14 @@ export function CognitiveProvider({ children }) {
       ? checkInData.reactionTimes.reduce((a, b) => a + b, 0) / checkInData.reactionTimes.length 
       : 0
 
+    const reactionScore = Math.max(0, 100 - (avgReactionMs / 10))
     const tasks = [
       { val: checkInData.memoryScore, count: 1 },
-      { val: Math.max(0, 100 - (avgReactionMs / 10)), count: 1 },
+      { val: reactionScore, count: 1 },
       { val: checkInData.patternScore, count: 1 },
       { val: checkInData.speechScore, count: checkInData.speechScore > 0 ? 1 : 0 },
-      { val: checkInData.stroopScore, count: checkInData.stroopScore > 0 ? 1 : 0 }
+      { val: checkInData.stroopScore, count: checkInData.stroopScore > 0 ? 1 : 0 },
+      { val: checkInData.facialScore, count: checkInData.facialScore > 0 ? 1 : 0 }
     ]
     const active = tasks.filter(t => t.count > 0)
     const totalScore = Math.round(active.reduce((s, t) => s + t.val, 0) / active.length)
@@ -82,10 +94,11 @@ export function CognitiveProvider({ children }) {
       userId: MOCK_USER_ID,
       taskScores: {
         memory: checkInData.memoryScore,
-        reaction: Math.round(Math.max(0, 100 - (avgReactionMs / 10))),
+        reaction: Math.round(reactionScore),
         sequence: checkInData.patternScore,
         speech: checkInData.speechScore,
-        stroop: checkInData.stroopScore
+        stroop: checkInData.stroopScore,
+        facial: checkInData.facialScore
       },
       rawMetrics: {
         memoryRecallCount: Math.round(checkInData.memoryScore / 20),
@@ -95,7 +108,10 @@ export function CognitiveProvider({ children }) {
         avgWordDuration: checkInData.avgWordDuration,
         pauseFrequency: checkInData.pauseFrequency,
         stroopAccuracy: checkInData.stroopAccuracy,
-        stroopAvgMs: checkInData.stroopAvgMs
+        stroopAvgMs: checkInData.stroopAvgMs,
+        facialBlinkRate: checkInData.facialBlinkRate,
+        facialStabilityScore: checkInData.facialStabilityScore,
+        facialEyeClosureTime: checkInData.facialEyeClosureTime
       },
       totalScore
     }

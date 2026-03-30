@@ -29,7 +29,8 @@ export default function ResultsScreen() {
     { val: checkInData.memoryScore, count: 1 },
     { val: Math.max(0, 100 - (avgReactionMs / 10)), count: 1 },
     { val: checkInData.patternScore, count: 1 },
-    { val: checkInData.speechScore, count: checkInData.speechScore > 0 ? 1 : 0 }
+    { val: checkInData.speechScore, count: checkInData.speechScore > 0 ? 1 : 0 },
+    { val: checkInData.facialScore, count: checkInData.facialScore > 0 ? 1 : 0 }
   ].filter(t => t.count > 0)
 
   const total = Math.round(activeTasks.reduce((s, t) => s + t.val, 0) / activeTasks.length)
@@ -40,6 +41,10 @@ export default function ResultsScreen() {
     { name: 'Pattern', score: checkInData.patternScore, status: checkInData.patternScore > 60 ? 'OPTIMAL' : 'CALIBRATING', color: 'text-success' },
     { name: 'Speech', score: checkInData.speechScore, status: checkInData.speechScore > 80 ? 'EXCELLENT' : 'NORMAL', color: 'text-primary' },
   ]
+  
+  if (checkInData.facialScore > 0) {
+    tasks.push({ name: 'Facial', score: checkInData.facialScore, status: checkInData.facialScore > 80 ? 'EXCELLENT' : checkInData.facialScore > 60 ? 'NORMAL' : 'MONITOR', color: 'text-[#8B5CF6]' })
+  }
 
   return (
     <div className="max-w-[800px] mx-auto fade-in">
