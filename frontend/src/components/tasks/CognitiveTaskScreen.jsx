@@ -35,6 +35,7 @@ export default function CognitiveTaskScreen() {
   const [userSeq, setUserSeq] = useState([])
   const [activeTile, setActiveTile] = useState(-1)
   const [playable, setPlayable] = useState(false)
+  const [isWrong, setIsWrong] = useState(false)
 
   useEffect(() => {
     if (!memoryStarted || memoryDone) return
@@ -103,6 +104,7 @@ export default function CognitiveTaskScreen() {
     setSeq(nextSeq)
     setUserSeq([])
     setPlayable(false)
+    setIsWrong(false)
     await new Promise((r) => setTimeout(r, 600))
     for (const idx of nextSeq) {
       setActiveTile(idx)
@@ -114,7 +116,7 @@ export default function CognitiveTaskScreen() {
   }
 
   const handleSeqClick = async (idx) => {
-    if (!playable) return
+    if (!playable || isWrong) return
     const nextUserSeq = [...userSeq, idx]
     setUserSeq(nextUserSeq)
     setActiveTile(idx)
@@ -123,9 +125,17 @@ export default function CognitiveTaskScreen() {
     const currIndex = nextUserSeq.length - 1
     if (nextUserSeq[currIndex] !== seq[currIndex]) {
       setPlayable(false)
+      setIsWrong(true)
       const nextRound = t3Round + 1
       setT3Round(nextRound)
-      if (nextRound === 3) updateCheckIn({ patternScore: Math.round((t3Score / 3) * 100) })
+      
+      setTimeout(() => {
+        if (nextRound < 3) {
+          startSeqRound()
+        } else {
+          updateCheckIn({ patternScore: Math.round((t3Score / 3) * 100) })
+        }
+      }, 1200)
       return
     }
     
@@ -135,7 +145,11 @@ export default function CognitiveTaskScreen() {
       setT3Score(newScore)
       const nextRound = t3Round + 1
       setT3Round(nextRound)
-      if (nextRound === 3) updateCheckIn({ patternScore: Math.round((newScore / 3) * 100) })
+      if (nextRound < 3) {
+        setTimeout(startSeqRound, 1500)
+      } else {
+        updateCheckIn({ patternScore: Math.round((newScore / 3) * 100) })
+      }
     }
   }
 
@@ -201,6 +215,7 @@ export default function CognitiveTaskScreen() {
           <TaskPatternMemory
             round={t3Round}
             active={activeTile}
+            wrongMove={isWrong}
             sequenceStarted={seq.length > 0}
             onTileClick={handleSeqClick}
             onStart={startSeqRound}

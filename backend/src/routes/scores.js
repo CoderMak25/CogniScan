@@ -21,20 +21,29 @@ router.post('/', async (req, res) => {
     const { userId, taskScores, rawMetrics = {}, timestamp } = req.body
     if (!mongoose.Types.ObjectId.isValid(userId)) return res.status(400).json({ message: 'Invalid userId' })
 
-    const user = await User.findById(userId).lean()
+    const MOCK_USER_ID = '000000000000000000000001'
+    let user = await User.findById(userId).lean()
+    
+    // For prototype/demo, allow the mock user even if not in DB
+    if (!user && userId === MOCK_USER_ID) {
+      user = { _id: userId, baseline: { overall: 80 } }
+    }
+    
     if (!user) return res.status(404).json({ message: 'User not found' })
 
     const memory = clamp(Number(taskScores.memory), 0, 100)
     const reaction = clamp(Number(taskScores.reaction), 0, 100)
     const sequence = clamp(Number(taskScores.sequence), 0, 100)
     const speech = taskScores.speech == null ? null : clamp(Number(taskScores.speech), 0, 100)
+    
+    // Synchronized with frontend weightings (25% each)
     const totalScore = speech == null
       ? Math.round(memory * 0.35 + reaction * 0.35 + sequence * 0.3)
-      : Math.round(memory * 0.25 + reaction * 0.25 + sequence * 0.2 + speech * 0.3)
+      : Math.round(memory * 0.25 + reaction * 0.25 + sequence * 0.25 + speech * 0.25)
 
     const history = await CognitiveScore.find({ userId }).sort({ timestamp: -1 }).limit(30).select('totalScore').lean()
     const arr = history.map((h) => h.totalScore)
-    const mu = arr.length ? mean(arr) : user.baseline?.overall || 80
+    const mu = arr.length ? mean(arr) : (user.baseline?.overall || 80)
     const sigma = std(arr)
     const zScore = Number(((totalScore - mu) / sigma).toFixed(2))
     const isAnomaly = zScore <= -1.5
@@ -47,7 +56,11 @@ router.post('/', async (req, res) => {
       totalScore,
       anomaly: { zScore, isAnomaly, threshold: -1.5 },
     })
-    await User.findByIdAndUpdate(userId, { lastCheckInAt: score.timestamp })
+    
+    // Only update if actual user exists
+    if (await User.findById(userId)) {
+      await User.findByIdAndUpdate(userId, { lastCheckInAt: score.timestamp })
+    }
 
     res.status(201).json({ message: 'Score saved', score })
   } catch (error) {

@@ -12,6 +12,8 @@ const rawSchema = new mongoose.Schema({
   reactionAvgMs: { type: Number, min: 0 },
   sequenceRoundsCorrect: { type: Number, min: 0, max: 3 },
   speechFluencyScore: { type: Number, min: 0, max: 100 },
+  avgWordDuration: { type: Number, default: 0 },
+  pauseFrequency: { type: Number, default: 0 },
 }, { _id: false })
 
 const anomalySchema = new mongoose.Schema({

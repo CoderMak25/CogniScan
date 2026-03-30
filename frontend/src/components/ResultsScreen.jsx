@@ -20,11 +20,12 @@ export default function ResultsScreen() {
     }
   }
 
-  // Calculate final weighted score if not already set
+  // Calculate final weighted score consistent with CognitiveContext
   const total = Math.round(
-    checkInData.memoryScore * 0.35 +
-    (checkInData.reactionTimes.length ? (100 - (checkInData.reactionTimes.reduce((a,b)=>a+b,0)/checkInData.reactionTimes.length)/10) * 0.35 : 0) +
-    checkInData.patternScore * 0.3
+    checkInData.memoryScore * 0.25 +
+    (checkInData.reactionTimes.length ? Math.max(0, 100 - (checkInData.reactionTimes.reduce((a,b)=>a+b,0)/checkInData.reactionTimes.length)/10) * 0.25 : 0) +
+    checkInData.patternScore * 0.25 +
+    checkInData.speechScore * 0.25
   )
 
   const tasks = [

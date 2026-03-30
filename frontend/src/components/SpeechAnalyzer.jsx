@@ -17,13 +17,15 @@ export default function SpeechAnalyzer() {
   const [seconds, setSeconds] = useState(0)
   const [transcript, setTranscript] = useState('')
   const [passage, setPassage] = useState(PASSAGES[0])
+  const [readIndices, setReadIndices] = useState(new Set())
   
   // Real-time Metrics
   const [metrics, setMetrics] = useState({
     wpm: 0,
     pauses: 0,
     accuracy: 100,
-    deviation: 0,
+    avgWordDuration: 0,
+    pauseFrequency: 0,
     mistakes: []
   })
 
@@ -47,17 +49,42 @@ export default function SpeechAnalyzer() {
     return () => clearInterval(timer)
   }, [recording])
 
-  // Process mistakes and accuracy in real-time
-  const analyzedPassage = useMemo(() => {
-    const pWords = passage.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").split(" ")
-    const tWords = transcript.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").split(" ")
+  // Persistent word detection logic
+  useEffect(() => {
+    if (!recording) return
+    const tWords = transcript.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").split(/\s+/).filter(w => w.length > 0)
+    const tWordCounts = tWords.reduce((acc, w) => {
+      acc[w] = (acc[w] || 0) + 1
+      return acc
+    }, {})
+
+    const newIndices = new Set(readIndices)
+    let changed = false
     
-    return passage.split(" ").map((word, i) => {
+    passage.split(/\s+/).forEach((word, i) => {
       const cleanWord = word.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "")
-      const isRead = tWords.includes(cleanWord)
-      return { word, isRead }
+      // Consume words already in readIndices first
+      if (newIndices.has(i)) {
+        if (tWordCounts[cleanWord] > 0) tWordCounts[cleanWord]--
+        return
+      }
+      // Then check for new matches
+      if (tWordCounts[cleanWord] > 0) {
+        newIndices.add(i)
+        tWordCounts[cleanWord]--
+        changed = true
+      }
     })
-  }, [passage, transcript])
+
+    if (changed) setReadIndices(newIndices)
+  }, [transcript, passage, recording])
+
+  const analyzedPassage = useMemo(() => {
+    return passage.split(/\s+/).map((word, i) => ({
+      word,
+      isRead: readIndices.has(i)
+    }))
+  }, [passage, readIndices])
 
   const draw = () => {
     const canvas = canvasRef.current
@@ -117,6 +144,7 @@ export default function SpeechAnalyzer() {
       }
       setSeconds(0)
       setTranscript('')
+      setReadIndices(new Set())
       setRecording(true)
       setDone(false)
       draw()
@@ -126,20 +154,21 @@ export default function SpeechAnalyzer() {
   }
 
   const calculateMetrics = () => {
-    const pWords = passage.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").split(" ")
-    const tWords = transcript.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "").split(" ")
-    
-    const correctCount = analyzedPassage.filter(w => w.isRead).length
-    const accuracy = Math.round((correctCount / analyzedPassage.length) * 100)
-    const mistakes = analyzedPassage.filter(w => !w.isRead).map(w => w.word)
-
-    const totalWords = tWords.filter(w => w.length > 0).length
+    const totalWords = transcript.split(/\s+/).filter(w => w.length > 0).length
     const durationMin = seconds / 60
     const wpm = durationMin > 0 ? Math.round(totalWords / durationMin) : 0
     const pauses = speechEvents.current.filter(e => e.type === 'pause').length
+    const pauseDurationTotal = speechEvents.current.reduce((acc, e) => acc + (e.duration || 0), 0) / 1000
     
-    setMetrics({ wpm, pauses, accuracy, mistakes, deviation: Math.abs(140 - wpm) })
-    return { wpm, pauses, accuracy, mistakes }
+    const speakingSeconds = Math.max(1, seconds - pauseDurationTotal)
+    const avgWordDuration = totalWords > 0 ? (speakingSeconds / totalWords).toFixed(2) : 0
+    const pauseFrequency = seconds > 0 ? (pauses / (seconds / 60)).toFixed(1) : 0
+    
+    const accuracy = Math.round((readIndices.size / passage.split(/\s+/).length) * 100)
+    const mistakes = passage.split(/\s+/).filter((_, i) => !readIndices.has(i))
+
+    setMetrics({ wpm, pauses, accuracy, mistakes, avgWordDuration, pauseFrequency })
+    return { wpm, pauses, accuracy, mistakes, avgWordDuration, pauseFrequency }
   }
 
   const stop = async () => {
@@ -155,9 +184,11 @@ export default function SpeechAnalyzer() {
       setProcessing(false)
       setDone(true)
       updateCheckIn({ 
-        speechScore: Math.round(final.accuracy * 0.6 + Math.max(0, 100 - final.pauses * 10) * 0.4),
+        speechScore: Math.round(final.accuracy * 0.6 + Math.max(0, 100 - (final.pauseFrequency * 5)) * 0.4),
         wpm: final.wpm,
         pauses: final.pauses,
+        avgWordDuration: final.avgWordDuration,
+        pauseFrequency: final.pauseFrequency,
         speechCompleted: true 
       })
     }, 1500)
@@ -214,21 +245,26 @@ export default function SpeechAnalyzer() {
       </div>
 
       {done && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 slide-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 slide-up">
           <div className="bg-card p-6 rounded-[24px] shadow-card border-t-4 border-primary">
             <h4 className="text-xs font-bold text-textSecondary uppercase mb-2">Fluency (WPM)</h4>
             <div className="text-4xl font-bold text-textPrimary">{metrics.wpm}</div>
             <p className="text-xs text-textSecondary mt-2">Optimal range: 130-160</p>
           </div>
           <div className="bg-card p-6 rounded-[24px] shadow-card border-t-4 border-success">
-            <h4 className="text-xs font-bold text-textSecondary uppercase mb-2">Accuracy Score</h4>
-            <div className="text-4xl font-bold text-textPrimary">{metrics.accuracy}%</div>
-            <p className="text-xs text-success mt-2">Excellent articulation detected</p>
+            <h4 className="text-xs font-bold text-textSecondary uppercase mb-2">Avg Word Duration</h4>
+            <div className="text-4xl font-bold text-textPrimary">{metrics.avgWordDuration}s</div>
+            <p className="text-xs text-success mt-2">Articulation speed</p>
           </div>
           <div className="bg-card p-6 rounded-[24px] shadow-card border-t-4 border-warning">
-            <h4 className="text-xs font-bold text-textSecondary uppercase mb-2">Mistakes Identified</h4>
-            <div className="text-4xl font-bold text-textPrimary">{metrics.mistakes.length}</div>
-            <p className="text-xs text-textSecondary mt-2 truncate">{metrics.mistakes.join(", ") || "None"}</p>
+            <h4 className="text-xs font-bold text-textSecondary uppercase mb-2">Pause Frequency</h4>
+            <div className="text-4xl font-bold text-textPrimary">{metrics.pauseFrequency}</div>
+            <p className="text-xs text-textSecondary mt-2">Pauses per minute</p>
+          </div>
+          <div className="bg-card p-6 rounded-[24px] shadow-card border-t-4 border-alert">
+            <h4 className="text-xs font-bold text-textSecondary uppercase mb-2">Accuracy</h4>
+            <div className="text-4xl font-bold text-textPrimary">{metrics.accuracy}%</div>
+            <p className="text-xs text-textSecondary mt-2 truncate">Speech mapping score</p>
           </div>
         </div>
       )}

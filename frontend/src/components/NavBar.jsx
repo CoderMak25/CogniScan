@@ -4,15 +4,12 @@ import { useCognitive } from '../context/CognitiveContext.jsx'
 export default function NavBar() {
   const { setIsDrawerOpen } = useCognitive()
 
-  const linkClass = ({ isActive }) =>
-    `relative py-1 transition-colors hover:text-primary ${
-      isActive ? 'text-primary font-medium' : 'text-textSecondary font-normal'
-    }`
-
-  const activeIndicator = ({ isActive }) =>
-    isActive ? (
-      <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-primary rounded-full fade-in"></span>
-    ) : null
+  const links = [
+    { to: '/tasks', label: 'Tasks' },
+    { to: '/dashboard', label: 'Dashboard' },
+    { to: '/speech', label: 'Speech Analysis' },
+    { to: '/insights', label: 'ML Insights' },
+  ]
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-[72px] bg-card/80 backdrop-blur-md z-50 border-b border-[#F1F3F4]">
@@ -23,22 +20,26 @@ export default function NavBar() {
           </NavLink>
           
           <div className="hidden md:flex gap-8 text-[14px]">
-            <NavLink to="/tasks" className={linkClass}>
-              Tasks
-              {activeIndicator}
-            </NavLink>
-            <NavLink to="/dashboard" className={linkClass}>
-              Dashboard
-              {activeIndicator}
-            </NavLink>
-            <NavLink to="/speech" className={linkClass}>
-              Speech Analysis
-              {activeIndicator}
-            </NavLink>
-            <NavLink to="/insights" className={linkClass}>
-              ML Insights
-              {activeIndicator}
-            </NavLink>
+            {links.map((link) => (
+              <NavLink 
+                key={link.to} 
+                to={link.to}
+                className={({ isActive }) => 
+                  `relative py-1 transition-colors hover:text-primary ${
+                    isActive ? 'text-primary font-medium' : 'text-textSecondary font-normal'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {link.label}
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-[2px] bg-primary rounded-full fade-in"></span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
           </div>
         </div>
 

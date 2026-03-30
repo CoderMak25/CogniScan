@@ -19,6 +19,8 @@ export function CognitiveProvider({ children }) {
     speechScore: 0,
     wpm: 0,
     pauses: 0,
+    avgWordDuration: 0,
+    pauseFrequency: 0,
     speechCompleted: false,
     totalScore: 0,
   })
@@ -35,6 +37,8 @@ export function CognitiveProvider({ children }) {
       speechScore: 0,
       wpm: 0,
       pauses: 0,
+      avgWordDuration: 0,
+      pauseFrequency: 0,
       speechCompleted: false,
       totalScore: 0,
     })
@@ -62,11 +66,18 @@ export function CognitiveProvider({ children }) {
       ? checkInData.reactionTimes.reduce((a, b) => a + b, 0) / checkInData.reactionTimes.length 
       : 0
 
+    const totalScore = Math.round(
+      checkInData.memoryScore * 0.25 +
+      (Math.max(0, 100 - (avgReactionMs / 10))) * 0.25 +
+      checkInData.patternScore * 0.25 +
+      checkInData.speechScore * 0.25
+    )
+
     const payload = {
       userId: MOCK_USER_ID,
       taskScores: {
         memory: checkInData.memoryScore,
-        reaction: Math.max(0, 100 - (avgReactionMs / 10)), // Simple normalization
+        reaction: Math.round(Math.max(0, 100 - (avgReactionMs / 10))),
         sequence: checkInData.patternScore,
         speech: checkInData.speechScore
       },
@@ -74,8 +85,11 @@ export function CognitiveProvider({ children }) {
         memoryRecallCount: Math.round(checkInData.memoryScore / 20),
         reactionAvgMs: Math.round(avgReactionMs),
         sequenceRoundsCorrect: Math.round(checkInData.patternScore / 33),
-        speechFluencyScore: checkInData.speechScore
-      }
+        speechFluencyScore: checkInData.speechScore,
+        avgWordDuration: checkInData.avgWordDuration,
+        pauseFrequency: checkInData.pauseFrequency
+      },
+      totalScore
     }
 
     try {

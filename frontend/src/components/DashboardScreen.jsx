@@ -106,17 +106,17 @@ export default function DashboardScreen() {
           </div>
           
           <div className="bg-card rounded-[24px] shadow-card p-6 border-b-4 border-success">
-            <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Short-term Shift</p>
-            <div className={`text-4xl font-bold ${progress >= 0 ? 'text-success' : 'text-alert'}`}>
-              {progress >= 0 ? '+' : ''}{progress}%
+            <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Speech Fluency</p>
+            <div className="text-4xl font-bold text-success">
+              {latestScore?.rawMetrics?.speechFluencyScore || '--'} <span className="text-sm">ACC</span>
             </div>
-            <p className="text-xs font-medium text-textSecondary mt-3">Compared to previous check-in</p>
+            <p className="text-xs font-medium text-textSecondary mt-3">Avg word duration: {latestScore?.rawMetrics?.avgWordDuration || 0}s</p>
           </div>
 
           <div className="bg-card rounded-[24px] shadow-card p-6 border-b-4 border-warning">
-            <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Anomaly Score</p>
-            <div className="text-4xl font-bold text-textPrimary">{latestScore?.anomaly?.zScore || '--'}</div>
-            <p className="text-xs font-medium text-textSecondary mt-3">Z-Score variance</p>
+            <p className="text-[10px] font-bold text-textSecondary uppercase tracking-widest mb-4">Acoustic Biomarkers</p>
+            <div className="text-4xl font-bold text-textPrimary">{latestScore?.rawMetrics?.pauseFrequency || '--'}</div>
+            <p className="text-xs font-medium text-textSecondary mt-3">Pause frequency (per min)</p>
           </div>
         </div>
 
