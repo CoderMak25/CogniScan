@@ -216,7 +216,7 @@ export default function FacialAnalyzer() {
 
   const initFaceMesh = useCallback(async () => {
     try {
-      const { FaceMesh, Camera } = await loadMediaPipe()
+      const { FaceMesh } = await loadMediaPipe()
 
       const faceMesh = new FaceMesh({
         locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
@@ -235,18 +235,55 @@ export default function FacialAnalyzer() {
       const video = videoRef.current
       if (!video) return
 
-      const camera = new Camera(video, {
-        onFrame: async () => {
-          if (faceMeshRef.current) {
-            await faceMeshRef.current.send({ image: video })
-          }
-        },
-        width: 640,
-        height: 480,
+      // Explicitly request video to trigger permissions and get real device labels.
+      // We wrap this in a try-catch because if DroidCam is default but offline, it might throw a NotReadableError here.
+      try {
+        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true })
+        tempStream.getTracks().forEach(t => t.stop())
+      } catch (e) {
+        console.warn('Initial default camera request threw error (possibly offline virtual camera). Proceeding to device list...', e)
+      }
+
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const videoDevices = devices.filter(d => d.kind === 'videoinput')
+      
+      // Filter out virtual cameras like DroidCam that might be hijacked as default
+      const realCamera = videoDevices.find(d => !d.label.toLowerCase().includes('droidcam') && !d.label.toLowerCase().includes('obs')) || videoDevices[0]
+
+      if (!realCamera) throw new Error("No video devices found at all");
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: realCamera.deviceId ? { exact: realCamera.deviceId } : undefined, width: 640, height: 480 }
       })
 
-      cameraRef.current = camera
-      await camera.start()
+      video.srcObject = stream
+      await video.play()
+
+      let reqId;
+      let isProcessing = false;
+      const tick = async () => {
+        if (!isProcessing && faceMeshRef.current && video.readyState >= 2) {
+          isProcessing = true;
+          try {
+            await faceMeshRef.current.send({ image: video })
+          } catch (e) {
+            console.warn('FaceMesh frame processing dropped', e)
+          }
+          isProcessing = false;
+        }
+        reqId = requestAnimationFrame(tick)
+      }
+      reqId = requestAnimationFrame(tick)
+
+      cameraRef.current = {
+        stop: () => {
+          cancelAnimationFrame(reqId)
+          if (video.srcObject) {
+            video.srcObject.getTracks().forEach(t => t.stop())
+          }
+        }
+      }
+
       setCameraReady(true)
     } catch (err) {
       console.error('Camera/FaceMesh init error:', err)
