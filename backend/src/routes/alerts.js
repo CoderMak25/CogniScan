@@ -6,8 +6,10 @@ const router = express.Router()
 router.post('/', async (req, res) => {
   try {
     const { userId, scoreDrop = 0, zScore = 0, scoreId } = req.body
-    const user = await User.findById(userId).lean()
-    if (!user) return res.status(404).json({ message: 'User not found' })
+    let user = await User.findById(userId).lean()
+    if (!user) {
+      user = { caregiver: { alertThresholdDrop: 15, alertEnabled: false } }
+    }
 
     const threshold = user.caregiver?.alertThresholdDrop || 15
     const enabled = user.caregiver?.alertEnabled || false

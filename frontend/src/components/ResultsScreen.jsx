@@ -20,65 +20,79 @@ export default function ResultsScreen() {
     }
   }
 
-  // Calculate final weighted score consistent with CognitiveContext
-  const total = Math.round(
-    checkInData.memoryScore * 0.25 +
-    (checkInData.reactionTimes.length ? Math.max(0, 100 - (checkInData.reactionTimes.reduce((a,b)=>a+b,0)/checkInData.reactionTimes.length)/10) * 0.25 : 0) +
-    checkInData.patternScore * 0.25 +
-    checkInData.speechScore * 0.25
-  )
+  // Calculate final weighted score dynamically consistent with CognitiveContext
+  const avgReactionMs = checkInData.reactionTimes.length 
+    ? checkInData.reactionTimes.reduce((a, b) => a + b, 0) / checkInData.reactionTimes.length 
+    : 0
+
+  const activeTasks = [
+    { val: checkInData.memoryScore, count: 1 },
+    { val: Math.max(0, 100 - (avgReactionMs / 10)), count: 1 },
+    { val: checkInData.patternScore, count: 1 },
+    { val: checkInData.speechScore, count: checkInData.speechScore > 0 ? 1 : 0 }
+  ].filter(t => t.count > 0)
+
+  const total = Math.round(activeTasks.reduce((s, t) => s + t.val, 0) / activeTasks.length)
 
   const tasks = [
-    { name: 'Memory Recall', score: checkInData.memoryScore, status: checkInData.memoryScore > 70 ? 'Optimal' : 'Flagged', color: 'text-success' },
-    { name: 'Motor Reaction', score: Math.round(checkInData.reactionTimes.length ? 100 - (checkInData.reactionTimes.reduce((a,b)=>a+b,0)/checkInData.reactionTimes.length)/10 : 0), status: 'Stable', color: 'text-primary' },
-    { name: 'Pattern Logic', score: checkInData.patternScore, status: checkInData.patternScore > 60 ? 'Optimal' : 'Low', color: 'text-success' },
-    { name: 'Speech Fluency', score: checkInData.speechScore, status: checkInData.speechScore > 80 ? 'Excellent' : 'Normal', color: 'text-primary' },
+    { name: 'Memory', score: checkInData.memoryScore, status: checkInData.memoryScore > 70 ? 'OPTIMAL' : 'MONITOR', color: 'text-success' },
+    { name: 'Motor', score: Math.round(Math.max(0, 100 - (avgReactionMs / 10))), status: 'STABLE', color: 'text-primary' },
+    { name: 'Pattern', score: checkInData.patternScore, status: checkInData.patternScore > 60 ? 'OPTIMAL' : 'CALIBRATING', color: 'text-success' },
+    { name: 'Speech', score: checkInData.speechScore, status: checkInData.speechScore > 80 ? 'EXCELLENT' : 'NORMAL', color: 'text-primary' },
   ]
 
   return (
     <div className="max-w-[800px] mx-auto fade-in">
-      <div className="bg-card rounded-[32px] shadow-card p-10 md:p-14 text-center border border-[#F1F3F4]">
-        <h2 className="text-4xl font-bold tracking-tight text-textPrimary mb-2">Check-in Complete</h2>
-        <p className="text-textSecondary mb-12">Your data has been processed by our cognitive baseline model.</p>
+      <div className="bg-white rounded-[48px] shadow-2xl p-12 md:p-16 text-center border border-[#F1F3F4] relative overflow-hidden group">
+        <div className="absolute -right-20 -top-20 w-60 h-60 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all"></div>
+        
+        <h2 className="text-5xl font-black tracking-tighter text-textPrimary mb-3 uppercase italic">Diagnostics Ready</h2>
+        <p className="text-textSecondary mb-16 font-medium">Multimodal consistency mapping complete</p>
 
-        <div className="relative inline-flex items-center justify-center mb-12">
-          <svg className="w-56 h-56 transform -rotate-90">
-            <circle cx="112" cy="112" r="100" stroke="#F1F3F4" strokeWidth="16" fill="transparent" />
+        <div className="relative inline-flex items-center justify-center mb-16 scale-110">
+          <svg className="w-64 h-64 transform -rotate-90">
+            <circle cx="128" cy="128" r="114" stroke="#F1F3F4" strokeWidth="20" fill="transparent" />
             <circle
-              cx="112" cy="112" r="100"
+              cx="128" cy="128" r="114"
               stroke={total > 85 ? '#34A853' : total > 70 ? '#1A73E8' : '#EA4335'}
-              strokeWidth="16" fill="transparent"
-              strokeDasharray={2 * Math.PI * 100}
-              strokeDashoffset={2 * Math.PI * 100 * (1 - total / 100)}
+              strokeWidth="20" fill="transparent"
+              strokeDasharray={2 * Math.PI * 114}
+              strokeDashoffset={2 * Math.PI * 114 * (1 - total / 100)}
               strokeLinecap="round"
-              className="transition-all duration-1000 ease-out"
+              className="transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(26,115,232,0.3)]"
             />
           </svg>
           <div className="absolute flex flex-col items-center">
-            <span className="text-6xl font-bold text-textPrimary leading-none">{total}</span>
-            <span className="text-xs font-bold text-textSecondary uppercase tracking-widest mt-2">Consistency</span>
+            <span className="text-7xl font-black text-textPrimary leading-none tracking-tighter">{total}</span>
+            <span className="text-[10px] font-black text-textSecondary uppercase tracking-[0.2em] mt-4 opacity-60">Consistency</span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-16">
           {tasks.map((task) => (
-            <div key={task.name} className="flex justify-between items-center p-6 bg-bg rounded-[24px] border border-[#F1F3F4]">
+            <div key={task.name} className="flex justify-between items-center p-8 bg-bg rounded-[32px] border border-[#F1F3F4] group hover:border-primary/20 transition-all">
               <div className="text-left">
-                <span className="block text-xs font-bold text-textSecondary uppercase mb-1">{task.name}</span>
-                <span className={`text-sm font-bold ${task.color}`}>{task.status}</span>
+                <span className="block text-[10px] font-black text-textSecondary uppercase mb-2 tracking-widest">{task.name} Index</span>
+                <span className={`text-[11px] font-black tracking-widest ${task.color} opacity-80 italic`}>{task.status}</span>
               </div>
-              <span className="text-2xl font-bold text-textPrimary">{task.score}</span>
+              <span className="text-3xl font-black text-textPrimary tracking-tighter">{task.score}</span>
             </div>
           ))}
         </div>
 
-        <button
-          onClick={handleFinish}
-          disabled={isSaving}
-          className="w-full bg-primary text-white py-5 rounded-[24px] font-bold text-lg hover:bg-[#155DB1] transition-all shadow-lg shadow-primary/25 disabled:opacity-50 active:scale-[0.98]"
-        >
-          {isSaving ? 'Saving to Secure Cloud...' : 'Submit & Update Dashboard'}
-        </button>
+        <div className="space-y-6">
+          <button
+            onClick={handleFinish}
+            disabled={isSaving}
+            className="w-full bg-primary text-white py-6 rounded-[32px] font-black text-xl uppercase tracking-widest hover:bg-[#155DB1] hover:scale-[1.02] transition-all shadow-2xl shadow-primary/30 disabled:opacity-50 active:scale-95"
+          >
+            {isSaving ? 'Synchronizing Pipeline...' : 'Commit to Dashboard'}
+          </button>
+          
+          <p className="text-[10px] text-textSecondary font-bold uppercase tracking-widest opacity-40">
+            Neuro-behavioral data encrypted using local clinical standards
+          </p>
+        </div>
       </div>
     </div>
   )

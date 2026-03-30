@@ -7,6 +7,7 @@ import SpeechAnalyzer from './components/SpeechAnalyzer.jsx'
 import InsightsScreen from './components/InsightsScreen.jsx'
 import ResultsScreen from './components/ResultsScreen.jsx'
 import CaregiverDrawer from './components/CaregiverDrawer.jsx'
+import SpecializedTaskScreen from './components/tasks/SpecializedTaskScreen.jsx'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingHero />} />
           <Route path="/tasks" element={<CognitiveTaskScreen />} />
+          <Route path="/tasks/:taskType" element={<SpecializedTaskScreen />} />
           <Route path="/results" element={<ResultsScreen />} />
           <Route path="/dashboard" element={<DashboardScreen />} />
           <Route path="/speech" element={<SpeechAnalyzer />} />
